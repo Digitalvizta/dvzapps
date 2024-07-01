@@ -14,6 +14,7 @@
     'author' : 'DigitalVizta',
     'website' : '',
     'depends': ['base','mail'],
+    'images': ['static/description/odoo.png'],
     'data': [
          'security/security.xml',
          'security/ir.model.access.csv',
@@ -22,6 +23,7 @@
          'views/asset_move_view.xml'
              
              ],
+
     'installable': True,
     'application': True,
     'auto_install': False,
