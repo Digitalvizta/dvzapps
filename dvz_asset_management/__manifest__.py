@@ -6,7 +6,7 @@
     'category': 'custom',
     'summary': 'Asset Management',
     'license':'LGPL-3',
-    'price' : 20.0,
+    'price' : 15.0,
     'currency': 'USD',
     'description': """
      Asset management is a simple system to manage assets owned by an organization.
