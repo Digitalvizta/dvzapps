@@ -163,7 +163,7 @@
 			id="menu_sale_commission_action_form" 
 			action="sale_commission_action_form" 
 			parent="sale.menu_sale_config" 
-			groups = 'sales_commission_generic.group_sales_commission_manager'
+			groups = 'dvz_sales_commission.group_sales_commission_manager'
 		/>
 
 		<menuitem 
@@ -199,7 +199,7 @@
 			name="Create invoice"
 			binding_model="invoice.sale.commission"
 			res_model="create.invoice.commission"
-			groups = 'sales_commission_generic.group_sales_commission_manager'
+			groups = 'dvz_sales_commission.group_sales_commission_manager'
 			view_mode="form"
 			target="new"/>
 
