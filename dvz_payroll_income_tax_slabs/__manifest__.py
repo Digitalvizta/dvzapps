@@ -16,7 +16,7 @@
 
     'category': 'payroll',
     "version" : "16.0.0.1",
-    "price": 69,
+    "price": 22,
     "currency": 'EUR',
     # any module necessary for this one to work correctly
     'depends': ['base','hr','om_hr_payroll'],
