@@ -1,0 +1,102 @@
+<odoo>
+    <data>
+        <!-- explicit list view definition -->
+        <record id="hr_contract_form_hides_supp_allow" model="ir.ui.view">
+
+            <field name="name">hr.contract.view.form.hides.supp.allo</field>
+
+            <field name="model">hr.contract</field>
+
+            <field name="inherit_id" ref="hr_contract.hr_contract_view_form"/>
+
+            <field name="arch" type="xml">
+
+                <xpath expr="//group[@name='salary']" position="after">
+                    <group>
+
+                        <!--                        <label for="income_tax" string="Monthly Tax Slabs in Cash"/>-->
+                        <field name="income_tax"/>
+                    </group>
+                </xpath>
+
+            </field>
+
+        </record>
+
+        <record model="ir.ui.view" id="payroll_income_tax_slabs.list">
+            <field name="name">payroll_income_tax_slabs list</field>
+            <field name="model">payroll_income_tax_slabs.payroll_income_tax_slabs</field>
+            <field name="arch" type="xml">
+                <!--                <group string="Bank Accounts" position="before">-->
+
+
+                <!--                        <field name="relation_field"/>-->
+                <tree editable="top">
+                    <!--                        <group string="Schedule">-->
+
+                    <field name="yearly_start_limit"/>
+                    <field name="yearly_end_limit"/>
+                    <field name="deduction_type"/>
+                    <field name="amount"/>
+                    <!--                        </group>-->
+
+                </tree>
+
+
+                <!--                </group>-->
+            </field>
+        </record>
+
+
+        <!-- actions opening views on models -->
+
+        <record model="ir.actions.act_window" id="payroll_income_tax_slabs_action_window">
+            <field name="name">payroll_income_tax_slabs window</field>
+            <field name="res_model">payroll_income_tax_slabs.payroll_income_tax_slabs</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+        <menuitem
+                id="menu_config_salary_slabs"
+                name="Tax Slabs"
+                parent="hr.menu_human_resources_configuration"
+                groups="hr.group_hr_user"
+                sequence="101" action="payroll_income_tax_slabs_action_window"/>
+
+
+
+
+
+        <!-- server action to the one above -->
+        <!--
+            <record model="ir.actions.server" id="dvz_payroll_income_tax_slabs.action_server">
+              <field name="name">dvz_payroll_income_tax_slabs server</field>
+              <field name="model_id" ref="model_payroll_income_tax_slabs_payroll_income_tax_slabs"/>
+              <field name="state">code</field>
+              <field name="code">
+                action = {
+                  "type": "ir.actions.act_window",
+                  "view_mode": "tree,form",
+                  "res_model": model._name,
+                }
+              </field>
+            </record>
+        -->
+
+        <!-- Top menu item -->
+        <!--
+            <menuitem name="dvz_payroll_income_tax_slabs" id="dvz_payroll_income_tax_slabs.menu_root"/>
+        -->
+        <!-- menu categories -->
+        <!--
+            <menuitem name="Menu 1" id="dvz_payroll_income_tax_slabs.menu_1" parent="dvz_payroll_income_tax_slabs.menu_root"/>
+            <menuitem name="Menu 2" id="dvz_payroll_income_tax_slabs.menu_2" parent="dvz_payroll_income_tax_slabs.menu_root"/>
+        -->
+        <!-- actions -->
+        <!--
+            <menuitem name="List" id="dvz_payroll_income_tax_slabs.menu_1_list" parent="dvz_payroll_income_tax_slabs.menu_1"
+                      action="dvz_payroll_income_tax_slabs.action_window"/>
+            <menuitem name="Server to list" id="dvz_payroll_income_tax_slabs" parent="dvz_payroll_income_tax_slabs.menu_2"
+                      action="dvz_payroll_income_tax_slabs.action_server"/>
+        -->
+    </data>
+</odoo>
