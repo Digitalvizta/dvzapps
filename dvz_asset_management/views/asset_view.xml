@@ -5,8 +5,8 @@
         <menuitem name="Asset Management"
             id="asset_management_main_menu"
             sequence="31"
-            web_icon="bt_asset_management,static/description/image_logo.png"
-            groups="bt_asset_management.group_asset_management_user"/>
+            web_icon="dvz_asset_management,static/description/image_logo.png"
+            groups="dvz_asset_management.group_asset_management_user"/>
         
         <menuitem
             id= "asset_managment_main_submenu"
