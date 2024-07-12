@@ -11,7 +11,8 @@
 
     "author" : "digitalvizta",
     "website" : "https://digitalvizta.com/",
-
+    'license':'LGPL-3',
+    'images': ['static/description/odoo.png'],
 
     'category': 'payroll',
     "version" : "16.0.0.1",
