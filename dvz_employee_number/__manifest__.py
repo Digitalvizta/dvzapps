@@ -31,6 +31,7 @@ This Module add below functionality into odoo
     'installable': True,
     'application': True,
     'auto_install': False,
+    'license': 'LGPL-3',
     'images': ['static/description/odoo.png'],
     
     #author and support Details ==========#
