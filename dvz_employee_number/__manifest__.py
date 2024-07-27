@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 {
-    'name': 'Employee Sequence',
+    'name': 'Employee Sequence Id',
     'version': '1.0',
     'sequence': 1,
     'category': 'Human Resources',
@@ -14,7 +14,7 @@
         - Customizes employee form and Kanban views to include the sequence number.
         - Provides a server action to generate sequence numbers for existing employees.
     """,
-    'summary': 'Displays a unique sequence number for each employee in Odoo',
+    'summary': 'Displays a unique sequence number Id for each employee in Odoo',
     'author': 'DigitalVizta',
     'website': 'https://digitalvizta.com/',
     'depends': ['hr'],
