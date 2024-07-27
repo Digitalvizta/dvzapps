@@ -1,13 +1,4 @@
 # -*- coding: utf-8 -*-
-##############################################################################
-#
-#    OpenERP, Open Source Management Solution
-#    Copyright (C) 2015 DevIntelle Consulting Service Pvt.Ltd (<http://www.devintellecs.com>).
-#
-#    For Module Support : devintelle@gmail.com  or Skype : devintelle
-#
-##############################################################################
-
 from . import models
 
 def pre_init_check(cr):
@@ -22,3 +13,21 @@ def pre_init_check(cr):
     return True
 
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
+
+
+def post_init_hook(cr, registry):
+    from odoo import api, SUPERUSER_ID, tools
+    import logging
+
+    _logger = logging.getLogger(__name__)
+    env = api.Environment(cr, SUPERUSER_ID, {})
+
+    # Search for the server action by its name
+    action = env['ir.actions.server'].search([('name', '=', 'Generate Employee Sequences')], limit=1)
+
+    if action:
+        # Execute the server action
+        action.create_action()
+    else:
+        # Log or handle the case where the server action is not found
+        _logger.warning("Server action 'Generate Employee Sequences' not found.")

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Inherit the employee form view to add a contextual button -->
+    <record id="view_hr_employee_inherit_sequence_form" model="ir.ui.view">
+        <field name="name">hr.employee.form.inherit.sequence</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <!-- Add a button to trigger the server action -->
+                <button name="%(action_generate_employee_sequences)d"
+                        type="action"
+                        string="Generate Sequences"
+                        class="btn-primary"
+                        attrs="{'invisible': [('emp_seq', '!=', False)]}"
+                        context="{'default_employee_id': active_id}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

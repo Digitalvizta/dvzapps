@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Define a server action for generating employee sequences -->
+    <record id="action_generate_employee_sequences" model="ir.actions.server">
+        <field name="name">Generate Employee Sequences</field>
+        <field name="model_id" ref="hr.model_hr_employee"/>
+        <field name="state">code</field>
+        <field name="code">
+            model.generate_employee_sequences()
+        </field>
+    </record>
+</odoo>
