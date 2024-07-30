@@ -1,10 +1,4 @@
 # -*- coding: utf-8 -*-
-################################################################################
-#
-#    Kolpolok Ltd. (https://www.kolpolok.com)
-#    Author: Kaushik Ahmed Apu, Aqil Mahmud, Zarin Tasnim(<https://www.kolpolok.com>)
-#
-################################################################################
 {
     'name': "Real Estate Management System",
     'version': '16.0.1.0',
@@ -16,9 +10,9 @@
     'description': """
         Real Estate Management System
     """,
-    "author": "digitalvizta",
+    "author": "DigitalVizta",
     "website" : "https://digitalvizta.com/",
-    'price': '0.0',
+    'price': '20.0',
     'currency': 'USD',
     'license': 'LGPL-3',
     'depends': ['base', 'mail', 'sale_management', 'website',

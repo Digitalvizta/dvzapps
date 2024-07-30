@@ -9,14 +9,14 @@
         Long description of module's purpose
     """,
 
-    "author" : "digitalvizta",
+    "author" : "DigitalVizta",
     "website" : "https://digitalvizta.com/",
     'license':'LGPL-3',
     'images': ['static/description/odoo.png'],
 
     'category': 'payroll',
     "version" : "16.0.0.1",
-    "price": 22,
+    "price": 15,
     "currency": 'EUR',
     # any module necessary for this one to work correctly
     'depends': ['base','hr','om_hr_payroll'],

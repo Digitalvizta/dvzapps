@@ -10,9 +10,9 @@
     "description": """
     
     """,
-    "author" : "digitalvizta",
+    "author" : "DigitalVizta",
     "website" : "",
-    "price": 69,
+    "price": 30,
     "currency": 'EUR',
     "depends" : ['base' , 'sale', 'sale_management', 'sale_stock', 'sale_margin'],
     "data" :[

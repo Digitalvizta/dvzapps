@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    'name': "dvz_contract_list",
+    'name': "Contract  List",
     'summary': """
         Contract List""",
 
@@ -8,7 +8,7 @@
         Contract List
     """,
     'category': "HR",
-    "author": "digitalvizta",
+    "author": "DigitalVizta",
     "website" : "https://digitalvizta.com/",
     # any module necessary for this one to work correctly
     'depends': ['base','hr','hr_contract'],
