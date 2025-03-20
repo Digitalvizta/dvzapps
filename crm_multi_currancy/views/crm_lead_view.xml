@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="crm_lead_tree_view_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.tree.view.inherit.currency</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_tree_view_oppor"/>
+        <field name="arch" type="xml">
+
+            <!-- Add new fields next to expected revenue -->
+            <xpath expr="//field[@name='expected_revenue']" position="after">
+                <field name="to_currency_id" optional="show"/>
+                <field name="converted_amount" sum="Converted Revenues" optional="show"/>
+            </xpath>
+            <xpath expr="//field[@name='expected_revenue']" position="before">
+                <field name="from_currency_id" optional="show"/>
+            </xpath>
+
+        </field>
+    </record>
+
+    <record id="crm_lead_kanban_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.kanban.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_kanban_view_leads"/>
+        <field name="arch" type="xml">
+            <!-- Replace the expected_revenue field -->
+            <xpath expr="//field[@name='expected_revenue']" position="replace">
+                <field name="expected_revenue" sum="Expected Revenues" widget="monetary"
+                       options="{'currency_field': 'from_currency_id'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="crm_lead_inherit_view_form" model="ir.ui.view">
+        <field name="name">crm.lead.form.inherit.currency</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_lead_view_form"/>
+        <field name="arch" type="xml">
+            <field name="expected_revenue" position="before">
+                <field name="from_currency_id" options='{"no_open": True}' class="oe_inline oe_small"/>
+            </field>
+            <field name="expected_revenue" position="after">
+                <field name="to_currency_id" options='{"no_open": True}' class="oe_inline oe_small" readonly="1"/>
+                <field name="converted_amount" widget="monetary" class="o_input_13ch"/>
+            </field>
+            <field name="expected_revenue" position="replace">
+                <field name="expected_revenue" class="o_input_13ch" widget="monetary"
+                       options="{'currency_field': 'from_currency_id'}"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="quick_create_opportunity_form_inherit" model="ir.ui.view">
+        <field name="name">crm.lead.form.quick_create.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.quick_create_opportunity_form"/>
+        <field name="arch" type="xml">
+            <field name="phone" position="after">
+                <field name="from_currency_id" options="{'no_open': True}" class="oe_inline oe_small"/>
+            </field>
+            <field name="expected_revenue" position="replace">
+                <field name="expected_revenue" class="o_input_13ch" widget="monetary"
+                       options="{'currency_field': 'from_currency_id'}"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="crm_case_kanban_view_leads_inherit" model="ir.ui.view">
+        <field name="name">crm.crm_case_kanban_view_leads.inherit</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="crm.crm_case_kanban_view_leads"/>
+        <field name="arch" type="xml">
+            <field name="company_currency" position="before">
+                <field name="from_currency_id"/>
+            </field>
+            <field name="expected_revenue" position="replace">
+                <field name="expected_revenue" class="o_input_13ch" widget="monetary"
+                       options="{'currency_field': 'from_currency_id'}"/>
+            </field>
+        </field>
+    </record>
+
+
+</odoo>
+
