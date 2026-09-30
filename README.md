@@ -115,7 +115,7 @@ Create these in your chart of accounts before you start billing:
 
 ## Publish on the Odoo Apps Store
 
-1. Create a Git repository, for example `github.com/<you>/odoo-contracting`, with a branch named `19.0`. Put the six module folders at the root of the repository.
+1. Create a Git repository, for example `github.com/Digitalvizta/odoo-contracting`, with a branch named `19.0`. Put the six module folders at the root of the repository.
 2. Sign in at apps.odoo.com, go to **Upload your apps**, and add the repository URL with `#19.0`, for example `https://github.com/<you>/odoo-contracting.git#19.0`. For a private repository, give read access to the `online-odoo` user.
 3. The store reads the following from each module:
    - The listing text from `static/description/index.html`.
