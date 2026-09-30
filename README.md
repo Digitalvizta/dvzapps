@@ -113,6 +113,7 @@ Create these in your chart of accounts before you start billing:
 - `dvz.contract._get_dvz_accounts()`: returns the journal, product and accounts. Subcontracts override it for the vendor side.
 - `dvz.contract.ipc._prepare_invoice_lines(acc)`, `_prepare_invoice(acc)`, `_after_invoice_created(move)`: customize invoicing.
 
+
 ## Support
 
 DigitalVizta | info@digitalvizta.net | WhatsApp +92 304 6117529 | https://digitalvizta.net | https://www.linkedin.com/company/digitalvizta-tech
