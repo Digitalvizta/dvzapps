@@ -113,20 +113,6 @@ Create these in your chart of accounts before you start billing:
 - `dvz.contract._get_dvz_accounts()`: returns the journal, product and accounts. Subcontracts override it for the vendor side.
 - `dvz.contract.ipc._prepare_invoice_lines(acc)`, `_prepare_invoice(acc)`, `_after_invoice_created(move)`: customize invoicing.
 
-## Publish on the Odoo Apps Store
-
-1. Create a Git repository, for example `github.com/<you>/odoo-contracting`, with a branch named `19.0`. Put the six module folders at the root of the repository.
-2. Sign in at apps.odoo.com, go to **Upload your apps**, and add the repository URL with `#19.0`, for example `https://github.com/<you>/odoo-contracting.git#19.0`. For a private repository, give read access to the `online-odoo` user.
-3. The store reads the following from each module:
-   - The listing text from `static/description/index.html`.
-   - The main image from `images` in the manifest (`static/description/banner.png`).
-   - The icon from `static/description/icon.png`.
-   - The price and license from the manifest.
-4. Paid modules must stay OPL-1. The free core stays LGPL-3.
-5. After the first scan, check each app page. Push again to update it; the store rescans the repository.
-
-The screenshots in `static/description` are high-fidelity mock-ups of the module screens. Once the modules run on your test server, you can replace them with real screenshots under the same file names.
-
 ## Support
 
 DigitalVizta | info@digitalvizta.net | WhatsApp +92 304 6117529 | https://digitalvizta.net | https://www.linkedin.com/company/digitalvizta-tech
