@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dvz_contract_user,dvz.contract user,model_dvz_contract,group_contract_user,1,1,1,0
+access_dvz_contract_manager,dvz.contract manager,model_dvz_contract,group_contract_manager,1,1,1,1
+access_dvz_contract_line_user,dvz.contract.line user,model_dvz_contract_line,group_contract_user,1,1,1,1

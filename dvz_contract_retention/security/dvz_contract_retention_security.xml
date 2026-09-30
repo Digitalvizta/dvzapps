@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_retention_release_company_rule" model="ir.rule">
+        <field name="name">Retention release: multi-company</field>
+        <field name="model_id" ref="model_dvz_retention_release"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="dvz_bank_guarantee_company_rule" model="ir.rule">
+        <field name="name">Bank guarantee: multi-company</field>
+        <field name="model_id" ref="model_dvz_bank_guarantee"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

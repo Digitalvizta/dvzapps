@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_dvz_retention" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.dvz_contract_retention</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="dvz_contract_ipc.res_config_settings_view_form_dvz_ipc"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='dvz_contract_ipc_accounting']" position="after">
+                <block title="Retention &amp; guarantees" name="dvz_contract_retention">
+                    <setting id="dvz_release_handover" help="Prepare a retention release draft when a contract is handed over.">
+                        <field name="dvz_release_auto_on_handover"/>
+                        <div class="content-group mt8" invisible="not dvz_release_auto_on_handover">
+                            <field name="dvz_release_handover_percent" class="oe_inline"/> % of retention held
+                        </div>
+                    </setting>
+                    <setting string="Reminders" help="Days before the defects period end / guarantee expiry to schedule an activity.">
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label for="dvz_retention_reminder_days" class="col-lg-6 o_light_label" string="Defects period"/>
+                                <field name="dvz_retention_reminder_days"/>
+                            </div>
+                            <div class="row">
+                                <label for="dvz_guarantee_reminder_days" class="col-lg-6 o_light_label" string="Guarantee expiry"/>
+                                <field name="dvz_guarantee_reminder_days"/>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting id="dvz_guarantee_expire" help="Set active guarantees to Expired after their expiry date.">
+                        <field name="dvz_guarantee_auto_expire"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

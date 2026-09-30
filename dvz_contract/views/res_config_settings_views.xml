@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_dvz_contract" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.dvz_contract</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="60"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Contracting" string="Contracting" name="dvz_contract"
+                     groups="dvz_contract.group_contract_manager">
+                    <block title="Contract defaults" name="dvz_contract_defaults">
+                        <setting string="Retention" help="Default percentage withheld from each payment certificate.">
+                            <field name="dvz_retention_percent" class="o_light_label"/> %
+                        </setting>
+                        <setting string="Advance payment" help="Default advance as a percentage of contract value, and how much of each certificate recovers it.">
+                            <div class="content-group">
+                                <div class="row mt8">
+                                    <label for="dvz_advance_percent" class="col-lg-5 o_light_label" string="Advance"/>
+                                    <field name="dvz_advance_percent"/>
+                                </div>
+                                <div class="row">
+                                    <label for="dvz_advance_recovery_percent" class="col-lg-5 o_light_label" string="Recovery per certificate"/>
+                                    <field name="dvz_advance_recovery_percent"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting string="Defects liability period" help="Months after handover before final retention is released.">
+                            <field name="dvz_dlp_months" class="o_light_label"/> months
+                        </setting>
+                        <setting string="Default taxes" help="Taxes proposed on new client contracts and subcontracts.">
+                            <div class="content-group">
+                                <div class="row mt8">
+                                    <label for="dvz_sale_tax_id" class="col-lg-5 o_light_label" string="Client contracts"/>
+                                    <field name="dvz_sale_tax_id" options="{'no_create': True}"/>
+                                </div>
+                                <div class="row">
+                                    <label for="dvz_purchase_tax_id" class="col-lg-5 o_light_label" string="Subcontracts"/>
+                                    <field name="dvz_purchase_tax_id" options="{'no_create': True}"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="Bill of quantities" name="dvz_contract_boq">
+                        <setting id="dvz_lock_boq" help="After confirmation the BOQ is read-only; changes go through variation orders.">
+                            <field name="dvz_lock_boq"/>
+                        </setting>
+                        <setting id="dvz_boq_cost" help="Show estimated unit cost on BOQ lines to get a cost budget and planned margin.">
+                            <field name="group_dvz_boq_cost"/>
+                        </setting>
+                    </block>
+                    <block title="Cost control" name="dvz_contract_cost">
+                        <setting id="dvz_auto_analytic" help="On confirmation, create an analytic account per contract (or reuse the project's) to track actual cost and revenue.">
+                            <field name="dvz_auto_analytic"/>
+                            <div class="content-group" invisible="not dvz_auto_analytic">
+                                <div class="row mt8">
+                                    <label for="dvz_analytic_plan_id" class="col-lg-5 o_light_label" string="Analytic plan"/>
+                                    <field name="dvz_analytic_plan_id" placeholder="Project plan"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+</odoo>

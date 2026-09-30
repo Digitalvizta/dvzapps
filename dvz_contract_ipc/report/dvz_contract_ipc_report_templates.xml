@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Bilingual label helper: English, plus Arabic when enabled in Settings -->
+    <template id="ipc_label">
+        <span t-out="en"/><t t-if="bi"><br/><span style="font-size: 85%;" dir="rtl" t-out="ar"/></t>
+    </template>
+
+    <template id="report_dvz_contract_ipc_document">
+        <t t-call="web.external_layout">
+            <t t-set="bi" t-value="o.company_id.dvz_ipc_bilingual_report"/>
+            <t t-set="c" t-value="o.contract_id"/>
+            <t t-set="address">
+                <div t-field="o.partner_id" t-options='{"widget": "contact", "fields": ["address", "name", "vat"], "no_marker": True}'/>
+            </t>
+            <div class="page">
+                <h3 class="text-center">
+                    Interim Payment Certificate
+                    <t t-if="bi"><br/><span dir="rtl">شهادة دفع مرحلية</span></t>
+                </h3>
+                <h4 class="text-center" t-field="o.name"/>
+
+                <table class="table table-sm table-borderless mt-3">
+                    <tr>
+                        <td class="w-25"><strong><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Contract'"/><t t-set="ar" t-value="'العقد'"/></t></strong></td>
+                        <td><span t-field="c.name"/> - <span t-field="c.title"/></td>
+                        <td class="w-25"><strong><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Certificate date'"/><t t-set="ar" t-value="'تاريخ الشهادة'"/></t></strong></td>
+                        <td><span t-field="o.date"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Project'"/><t t-set="ar" t-value="'المشروع'"/></t></strong></td>
+                        <td><span t-field="o.project_id"/></td>
+                        <td><strong><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Period'"/><t t-set="ar" t-value="'الفترة'"/></t></strong></td>
+                        <td><span t-field="o.period_start"/> - <span t-field="o.period_end"/></td>
+                    </tr>
+                </table>
+
+                <table class="table table-sm o_main_table mt-2" style="font-size: 85%;">
+                    <thead>
+                        <tr>
+                            <th><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Item'"/><t t-set="ar" t-value="'البند'"/></t></th>
+                            <th><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Description'"/><t t-set="ar" t-value="'الوصف'"/></t></th>
+                            <th class="text-center"><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Unit'"/><t t-set="ar" t-value="'الوحدة'"/></t></th>
+                            <th class="text-end"><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'BOQ qty'"/><t t-set="ar" t-value="'الكمية'"/></t></th>
+                            <th class="text-end"><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Rate'"/><t t-set="ar" t-value="'السعر'"/></t></th>
+                            <th class="text-end"><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Previous'"/><t t-set="ar" t-value="'السابق'"/></t></th>
+                            <th class="text-end"><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'This period'"/><t t-set="ar" t-value="'الحالي'"/></t></th>
+                            <th class="text-end"><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Cumulative'"/><t t-set="ar" t-value="'التراكمي'"/></t></th>
+                            <th class="text-end">%</th>
+                            <th class="text-end"><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Amount'"/><t t-set="ar" t-value="'المبلغ'"/></t></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="o.line_ids" t-as="line">
+                            <tr t-if="line.display_type == 'line_section'" class="bg-200 fw-bold">
+                                <td colspan="10"><span t-field="line.name"/></td>
+                            </tr>
+                            <tr t-elif="line.display_type == 'line_note'" class="fst-italic">
+                                <td colspan="10"><span t-field="line.name"/></td>
+                            </tr>
+                            <tr t-elif="line.cumulative_qty or line.current_qty">
+                                <td><span t-field="line.code"/></td>
+                                <td><span t-out="(line.name or '').split('\n')[0]"/></td>
+                                <td class="text-center"><span t-field="line.uom_id"/></td>
+                                <td class="text-end"><span t-field="line.contract_qty"/></td>
+                                <td class="text-end"><span t-field="line.price_unit"/></td>
+                                <td class="text-end"><span t-field="line.previous_qty"/></td>
+                                <td class="text-end"><span t-field="line.current_qty"/></td>
+                                <td class="text-end"><span t-field="line.cumulative_qty"/></td>
+                                <td class="text-end"><t t-out="'%.1f' % line.cumulative_percent"/></td>
+                                <td class="text-end"><span t-field="line.amount_current"/></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <div class="row justify-content-end">
+                    <div class="col-7">
+                        <table class="table table-sm">
+                            <tr><td><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Contract value'"/><t t-set="ar" t-value="'قيمة العقد'"/></t></td><td class="text-end"><span t-field="o.amount_contract"/></td></tr>
+                            <tr><td><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Cumulative work done'"/><t t-set="ar" t-value="'إجمالي الأعمال المنفذة'"/></t></td><td class="text-end"><span t-field="o.amount_cumulative"/></td></tr>
+                            <tr><td><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Less previously certified'"/><t t-set="ar" t-value="'يخصم المعتمد سابقاً'"/></t></td><td class="text-end"><span t-field="o.amount_previous"/></td></tr>
+                            <tr class="fw-bold border-top"><td><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Work done this period'"/><t t-set="ar" t-value="'أعمال الفترة الحالية'"/></t></td><td class="text-end"><span t-field="o.amount_gross"/></td></tr>
+                            <tr t-if="o.amount_retention"><td><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Less retention %s%%' % o.retention_percent"/><t t-set="ar" t-value="'يخصم محتجز الضمان'"/></t><t t-if="o.retention_method == 'track_only'"> (<t t-out="'tracked, not deducted'"/>)</t></td><td class="text-end">- <span t-field="o.amount_retention"/></td></tr>
+                            <tr t-if="o.amount_advance_recovery"><td><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Less advance recovery'"/><t t-set="ar" t-value="'يخصم استرداد الدفعة المقدمة'"/></t></td><td class="text-end">- <span t-field="o.amount_advance_recovery"/></td></tr>
+                            <tr t-if="o.amount_other_deduction"><td><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="o.other_deduction_note or 'Other deductions'"/><t t-set="ar" t-value="'خصومات أخرى'"/></t></td><td class="text-end">- <span t-field="o.amount_other_deduction"/></td></tr>
+                            <tr class="border-top"><td><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Net amount'"/><t t-set="ar" t-value="'المبلغ الصافي'"/></t></td><td class="text-end"><span t-field="o.amount_net"/></td></tr>
+                            <tr><td><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Tax'"/><t t-set="ar" t-value="'الضريبة'"/></t></td><td class="text-end"><span t-field="o.amount_tax"/></td></tr>
+                            <tr class="fw-bold border-top"><td><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Amount due'"/><t t-set="ar" t-value="'المبلغ المستحق'"/></t></td><td class="text-end"><span t-field="o.amount_payable"/></td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div t-if="o.note" class="mt-2" t-field="o.note"/>
+
+                <div class="row mt-5 text-center">
+                    <div class="col-4"><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Prepared by'"/><t t-set="ar" t-value="'إعداد'"/></t><br/><br/>________________</div>
+                    <div class="col-4"><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Consultant / Engineer'"/><t t-set="ar" t-value="'الاستشاري'"/></t><br/><br/>________________</div>
+                    <div class="col-4"><t t-call="dvz_contract_ipc.ipc_label"><t t-set="en" t-value="'Approved by'"/><t t-set="ar" t-value="'اعتماد'"/></t><br/><span t-field="o.approved_by_id"/><br/>________________</div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_dvz_contract_ipc">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="dvz_contract_ipc.report_dvz_contract_ipc_document"/>
+            </t>
+        </t>
+    </template>
+</odoo>

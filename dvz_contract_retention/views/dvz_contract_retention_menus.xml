@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_dvz_retention_release" name="Retention releases" parent="dvz_contract.menu_dvz_contract_billing"
+              action="action_dvz_retention_release" sequence="30"/>
+    <menuitem id="menu_dvz_bank_guarantee" name="Bank guarantees" parent="dvz_contract.menu_dvz_contract_main"
+              action="action_dvz_bank_guarantee" sequence="40"/>
+</odoo>

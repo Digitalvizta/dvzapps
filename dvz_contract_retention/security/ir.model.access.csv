@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dvz_retention_release_user,dvz.retention.release user,model_dvz_retention_release,dvz_contract.group_contract_user,1,1,1,0
+access_dvz_retention_release_manager,dvz.retention.release manager,model_dvz_retention_release,dvz_contract.group_contract_manager,1,1,1,1
+access_dvz_bank_guarantee_user,dvz.bank.guarantee user,model_dvz_bank_guarantee,dvz_contract.group_contract_user,1,1,1,0
+access_dvz_bank_guarantee_manager,dvz.bank.guarantee manager,model_dvz_bank_guarantee,dvz_contract.group_contract_manager,1,1,1,1

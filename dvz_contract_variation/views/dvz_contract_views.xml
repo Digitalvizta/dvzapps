@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_contract_view_form_variation" model="ir.ui.view">
+        <field name="name">dvz.contract.form.variation</field>
+        <field name="model">dvz.contract</field>
+        <field name="inherit_id" ref="dvz_contract.dvz_contract_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_handover']" position="before">
+                <button name="action_new_variation" type="object" string="New variation" invisible="state != 'running'"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_variations" type="object" class="oe_stat_button" icon="fa-exchange"
+                        invisible="not variation_count">
+                    <field name="variation_count" widget="statinfo" string="Variations"/>
+                </button>
+            </xpath>
+            <xpath expr="//field[@name='amount_variation']" position="after">
+                <field name="variation_pending_amount" invisible="not variation_pending_amount"/>
+            </xpath>
+            <xpath expr="//field[@name='line_ids']/list/field[@name='origin']" position="after">
+                <field name="variation_id" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

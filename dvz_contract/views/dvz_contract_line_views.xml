@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_contract_line_view_list" model="ir.ui.view">
+        <field name="name">dvz.contract.line.list</field>
+        <field name="model">dvz.contract.line</field>
+        <field name="arch" type="xml">
+            <list string="BOQ lines" editable="bottom" create="1">
+                <field name="contract_id" readonly="id"/>
+                <field name="sequence" widget="handle"/>
+                <field name="display_type" optional="hide"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="product_id" optional="hide"/>
+                <field name="uom_id"/>
+                <field name="quantity"/>
+                <field name="price_unit"/>
+                <field name="amount" sum="Total"/>
+                <field name="cost_price" optional="hide" groups="dvz_contract.group_boq_cost"/>
+                <field name="cost_amount" optional="hide" sum="Total cost" groups="dvz_contract.group_boq_cost"/>
+                <field name="origin" optional="show"/>
+                <field name="partner_id" optional="hide"/>
+                <field name="contract_state" optional="hide"/>
+                <field name="currency_id" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dvz_contract_line_view_form" model="ir.ui.view">
+        <field name="name">dvz.contract.line.form</field>
+        <field name="model">dvz.contract.line</field>
+        <field name="arch" type="xml">
+            <form string="BOQ line">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="contract_id"/>
+                            <field name="code"/>
+                            <field name="product_id"/>
+                            <field name="origin"/>
+                        </group>
+                        <group>
+                            <field name="uom_id"/>
+                            <field name="quantity"/>
+                            <field name="price_unit"/>
+                            <field name="amount"/>
+                            <field name="cost_price" groups="dvz_contract.group_boq_cost"/>
+                            <field name="cost_amount" groups="dvz_contract.group_boq_cost"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <field name="name" placeholder="Item description"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="dvz_contract_line_view_search" model="ir.ui.view">
+        <field name="name">dvz.contract.line.search</field>
+        <field name="model">dvz.contract.line</field>
+        <field name="arch" type="xml">
+            <search string="BOQ lines">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="contract_id"/>
+                <field name="product_id"/>
+                <field name="partner_id"/>
+                <filter string="Items only" name="items" domain="[('display_type', '=', False)]"/>
+                <filter string="Variations" name="variations" domain="[('origin', '=', 'variation')]"/>
+                <group>
+                    <filter string="Contract" name="group_contract" context="{'group_by': 'contract_id'}"/>
+                    <filter string="Unit" name="group_uom" context="{'group_by': 'uom_id'}"/>
+                    <filter string="Origin" name="group_origin" context="{'group_by': 'origin'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="dvz_contract_line_view_pivot" model="ir.ui.view">
+        <field name="name">dvz.contract.line.pivot</field>
+        <field name="model">dvz.contract.line</field>
+        <field name="arch" type="xml">
+            <pivot string="BOQ analysis">
+                <field name="contract_id" type="row"/>
+                <field name="origin" type="col"/>
+                <field name="amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_dvz_contract_line" model="ir.actions.act_window">
+        <field name="name">BOQ lines</field>
+        <field name="res_model">dvz.contract.line</field>
+        <field name="view_mode">list,form,pivot</field>
+        <field name="search_view_id" ref="dvz_contract_line_view_search"/>
+        <field name="context">{'search_default_items': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No BOQ lines yet</p>
+            <p>Tip: use Import records from the gear menu to load a BOQ from Excel (columns: Contract, Item no., Description, Unit, Quantity, Rate).</p>
+        </field>
+    </record>
+</odoo>

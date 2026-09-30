@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_contract_view_form_ipc" model="ir.ui.view">
+        <field name="name">dvz.contract.form.ipc</field>
+        <field name="model">dvz.contract</field>
+        <field name="inherit_id" ref="dvz_contract.dvz_contract_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_handover']" position="before">
+                <button name="action_new_ipc" type="object" string="New certificate" class="btn-primary"
+                        invisible="state != 'running'"/>
+                <button name="action_create_advance_invoice" type="object" string="Advance invoice"
+                        invisible="state != 'running' or not advance_amount or advance_invoice_id"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_ipcs" type="object" class="oe_stat_button" icon="fa-certificate"
+                        invisible="not ipc_count">
+                    <field name="ipc_count" widget="statinfo" string="Certificates"/>
+                </button>
+                <button name="action_view_invoices" type="object" class="oe_stat_button" icon="fa-pencil-square-o"
+                        invisible="not invoice_count">
+                    <field name="invoice_count" widget="statinfo" string="Invoices"/>
+                </button>
+            </xpath>
+            <xpath expr="//page[@name='terms']" position="after">
+                <page string="Billing" name="billing" invisible="state == 'draft'">
+                    <group>
+                        <group string="Certified">
+                            <field name="amount_certified"/>
+                            <field name="certified_percent" widget="progressbar"/>
+                            <field name="retention_held"/>
+                        </group>
+                        <group string="Advance payment">
+                            <field name="advance_invoice_id"/>
+                            <field name="advance_recovered"/>
+                            <field name="advance_remaining"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="dvz_contract_view_list_ipc" model="ir.ui.view">
+        <field name="name">dvz.contract.list.ipc</field>
+        <field name="model">dvz.contract</field>
+        <field name="inherit_id" ref="dvz_contract.dvz_contract_view_list"/>
+        <field name="arch" type="xml">
+            <field name="amount_total" position="after">
+                <field name="certified_percent" widget="progressbar" optional="show"/>
+            </field>
+        </field>
+    </record>
+</odoo>

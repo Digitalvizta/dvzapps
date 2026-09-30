@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_retention_release_view_list" model="ir.ui.view">
+        <field name="name">dvz.retention.release.list</field>
+        <field name="model">dvz.retention.release</field>
+        <field name="arch" type="xml">
+            <list string="Retention releases" decoration-muted="state == 'cancel'" decoration-info="state == 'draft'">
+                <field name="name"/>
+                <field name="contract_id"/>
+                <field name="partner_id"/>
+                <field name="stage"/>
+                <field name="date"/>
+                <field name="amount" sum="Total"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="invoice_id" optional="show"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'" decoration-info="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dvz_retention_release_view_form" model="ir.ui.view">
+        <field name="name">dvz.retention.release.form</field>
+        <field name="model">dvz.retention.release</field>
+        <field name="arch" type="xml">
+            <form string="Retention release">
+                <header>
+                    <button name="action_release" type="object" string="Release" class="btn-primary"
+                            invisible="state != 'draft'" groups="dvz_contract.group_contract_manager"/>
+                    <button name="action_cancel" type="object" string="Cancel" invisible="state == 'cancel'"/>
+                    <button name="action_draft" type="object" string="Reset to draft" invisible="state != 'cancel'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoice" type="object" class="oe_stat_button" icon="fa-file-text-o"
+                                invisible="not invoice_id" string="Invoice"/>
+                    </div>
+                    <div class="oe_title"><h1><field name="name" readonly="1"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="contract_id" readonly="state != 'draft'" options="{'no_create': True}"/>
+                            <field name="partner_id"/>
+                            <field name="stage" readonly="state != 'draft'"/>
+                            <field name="date" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="retention_balance"/>
+                            <field name="percent" readonly="state != 'draft'"/>
+                            <field name="amount" readonly="state != 'draft'"/>
+                            <field name="method" readonly="state != 'draft'" widget="radio"/>
+                            <field name="invoice_id" invisible="not invoice_id"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <field name="note" placeholder="Taking-over certificate ref., defects cleared, etc."/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="dvz_retention_release_view_search" model="ir.ui.view">
+        <field name="name">dvz.retention.release.search</field>
+        <field name="model">dvz.retention.release</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="contract_id"/>
+                <field name="partner_id"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Released" name="done" domain="[('state', '=', 'done')]"/>
+                <group>
+                    <filter string="Contract" name="group_contract" context="{'group_by': 'contract_id'}"/>
+                    <filter string="Stage" name="group_stage" context="{'group_by': 'stage'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dvz_retention_release" model="ir.actions.act_window">
+        <field name="name">Retention releases</field>
+        <field name="res_model">dvz.retention.release</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="dvz_retention_release_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No retention released yet</p>
+            <p>A release draft is prepared automatically when a contract is handed over.</p>
+        </field>
+    </record>
+</odoo>
