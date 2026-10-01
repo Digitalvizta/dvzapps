@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_manpower_root" name="Manpower Supply"
+              web_icon="dv_manpower_supply,static/description/icon.png"
+              groups="group_manpower_user" sequence="45"/>
+
+    <menuitem id="menu_manpower_operations" name="Operations"
+              parent="menu_manpower_root" sequence="10"/>
+    <menuitem id="menu_manpower_contracts" name="Supply Contracts"
+              parent="menu_manpower_operations" action="action_manpower_contract" sequence="10"/>
+    <menuitem id="menu_manpower_assignments" name="Worker Assignments"
+              parent="menu_manpower_operations" action="action_manpower_assignment" sequence="20"/>
+    <menuitem id="menu_manpower_workers" name="Workers"
+              parent="menu_manpower_operations" action="action_manpower_workers" sequence="30"/>
+
+    <menuitem id="menu_manpower_reporting" name="Reporting"
+              parent="menu_manpower_root" sequence="80"/>
+    <menuitem id="menu_manpower_config" name="Configuration"
+              parent="menu_manpower_root" sequence="90" groups="group_manpower_manager"/>
+    <menuitem id="menu_manpower_settings" name="Settings"
+              parent="menu_manpower_config" action="action_manpower_settings" sequence="1"/>
+    <menuitem id="menu_manpower_jobs" name="Job Positions"
+              parent="menu_manpower_config" action="hr.action_hr_job" sequence="10"/>
+</odoo>

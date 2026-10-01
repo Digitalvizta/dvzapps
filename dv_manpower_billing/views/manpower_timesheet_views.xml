@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_manpower_timesheet_form_billing" model="ir.ui.view">
+        <field name="name">dv.manpower.timesheet.form.billing</field>
+        <field name="model">dv.manpower.timesheet</field>
+        <field name="inherit_id" ref="dv_manpower_timesheet.view_manpower_timesheet_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/field[@name='state']" position="before">
+                <button name="action_create_invoice" type="object" string="Create Invoice" class="btn-primary" groups="account.group_account_invoice"
+                        invisible="state != 'approved' or invoice_id"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_invoice" type="object" class="oe_stat_button" icon="fa-file-text-o" groups="account.group_account_invoice"
+                        invisible="not invoice_id">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Invoice</span>
+                        <span class="o_stat_value"><field name="invoice_payment_state"/></span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//field[@name='approval_date']" position="after">
+                <field name="invoice_id" invisible="not invoice_id"/>
+                <field name="amount_total"/>
+                <field name="currency_id" invisible="1"/>
+            </xpath>
+            <xpath expr="//field[@name='line_ids']/list/field[@name='overtime_hours']" position="after">
+                <field name="rate_line_id" optional="show" options="{'no_create': True}"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="amount_regular" optional="hide"/>
+                <field name="amount_overtime" optional="hide"/>
+                <field name="amount_total" sum="Total"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_manpower_timesheet_list_billing" model="ir.ui.view">
+        <field name="name">dv.manpower.timesheet.list.billing</field>
+        <field name="model">dv.manpower.timesheet</field>
+        <field name="inherit_id" ref="dv_manpower_timesheet.view_manpower_timesheet_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='state']" position="before">
+                <field name="currency_id" column_invisible="1"/>
+                <field name="amount_total" sum="Total"/>
+                <field name="invoice_id" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_manpower_timesheet_search_billing" model="ir.ui.view">
+        <field name="name">dv.manpower.timesheet.search.billing</field>
+        <field name="model">dv.manpower.timesheet</field>
+        <field name="inherit_id" ref="dv_manpower_timesheet.view_manpower_timesheet_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='filter_rejected']" position="after">
+                <filter name="filter_to_invoice" string="To Invoice"
+                        domain="[('state', '=', 'approved'), ('invoice_id', '=', False)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_server_timesheet_invoice" model="ir.actions.server">
+        <field name="name">Create Invoices</field>
+        <field name="model_id" ref="dv_manpower_timesheet.model_dv_manpower_timesheet"/>
+        <field name="binding_model_id" ref="dv_manpower_timesheet.model_dv_manpower_timesheet"/>
+        <field name="binding_view_types">list</field>
+        <field name="group_ids" eval="[(4, ref('account.group_account_invoice'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.filtered(lambda s: s.state == 'approved' and not s.invoice_id).action_create_invoice()</field>
+    </record>
+
+    <record id="action_manpower_timesheet_to_invoice" model="ir.actions.act_window">
+        <field name="name">Timesheets to Invoice</field>
+        <field name="res_model">dv.manpower.timesheet</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_filter_to_invoice': 1}</field>
+    </record>
+
+    <menuitem id="menu_manpower_billing" name="Billing"
+              parent="dv_manpower_supply.menu_manpower_root" sequence="50"
+              groups="account.group_account_invoice"/>
+    <menuitem id="menu_manpower_to_invoice" name="Timesheets to Invoice"
+              parent="menu_manpower_billing" action="action_manpower_timesheet_to_invoice" sequence="10"/>
+    <menuitem id="menu_manpower_invoices" name="Customer Invoices"
+              parent="menu_manpower_billing" action="account.action_move_out_invoice_type" sequence="20"/>
+</odoo>

@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dv_manpower_contract_user,dv.manpower.contract user,model_dv_manpower_contract,group_manpower_user,1,1,1,0
+access_dv_manpower_contract_manager,dv.manpower.contract manager,model_dv_manpower_contract,group_manpower_manager,1,1,1,1
+access_dv_manpower_contract_line_user,dv.manpower.contract.line user,model_dv_manpower_contract_line,group_manpower_user,1,1,1,1
+access_dv_manpower_assignment_user,dv.manpower.assignment user,model_dv_manpower_assignment,group_manpower_user,1,1,1,0
+access_dv_manpower_assignment_manager,dv.manpower.assignment manager,model_dv_manpower_assignment,group_manpower_manager,1,1,1,1

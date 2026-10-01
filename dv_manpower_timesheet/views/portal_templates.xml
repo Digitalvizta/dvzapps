@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_my_home_manpower_timesheet" name="Manpower Timesheets"
+              customize_show="True" inherit_id="portal.portal_my_home" priority="40">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
+            <t t-set="portal_client_category_enable" t-value="True"/>
+        </xpath>
+        <div id="portal_client_category" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/dv_manpower_timesheet/static/description/icon.png'"/>
+                <t t-set="title">Manpower Timesheets</t>
+                <t t-set="text">Review and approve worker timesheets</t>
+                <t t-set="url" t-value="'/my/manpower/timesheets'"/>
+                <t t-set="placeholder_count" t-value="'manpower_timesheet_count'"/>
+            </t>
+        </div>
+    </template>
+
+    <template id="portal_breadcrumbs_manpower_timesheet" name="Manpower timesheet breadcrumbs"
+              inherit_id="portal.portal_breadcrumbs" priority="40">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'manpower_timesheet'"
+                t-attf-class="breadcrumb-item #{'active ' if not sheet else ''}">
+                <a t-if="sheet" href="/my/manpower/timesheets">Manpower Timesheets</a>
+                <t t-else="">Manpower Timesheets</t>
+            </li>
+            <li t-if="page_name == 'manpower_timesheet' and sheet" class="breadcrumb-item active">
+                <t t-out="sheet.name"/>
+            </li>
+        </xpath>
+    </template>
+
+    <template id="portal_my_manpower_timesheets" name="My Manpower Timesheets">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Manpower Timesheets</t>
+            </t>
+            <div t-if="not sheets" class="alert alert-info">There are no timesheets to review yet.</div>
+            <t t-if="sheets" t-call="portal.portal_table">
+                <thead>
+                    <tr>
+                        <th>Reference</th>
+                        <th>Contract</th>
+                        <th>Period</th>
+                        <th class="text-end">Days</th>
+                        <th class="text-end">Overtime (h)</th>
+                        <th class="text-end">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="sheets" t-as="s">
+                        <td><a t-att-href="s.get_portal_url()"><t t-out="s.name"/></a></td>
+                        <td><t t-out="s.contract_id.name"/></td>
+                        <td><span t-field="s.date_from"/> - <span t-field="s.date_to"/></td>
+                        <td class="text-end"><t t-out="s.total_days"/></td>
+                        <td class="text-end"><t t-out="s.total_overtime"/></td>
+                        <td class="text-end">
+                            <span t-if="s.state == 'submitted'" class="badge text-bg-warning">Waiting your approval</span>
+                            <span t-elif="s.state == 'approved'" class="badge text-bg-success">Approved</span>
+                            <span t-elif="s.state == 'rejected'" class="badge text-bg-danger">Rejected</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </t>
+        </t>
+    </template>
+
+    <template id="portal_my_manpower_timesheet" name="Manpower Timesheet">
+        <t t-call="portal.portal_layout">
+            <div class="container py-3">
+                <div t-if="message == 'done'" class="alert alert-success">Thank you, your decision has been recorded.</div>
+                <div t-if="message == 'error'" class="alert alert-danger">This timesheet is no longer waiting for approval.</div>
+
+                <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                    <h3 class="mb-0">Timesheet <t t-out="sheet.name"/></h3>
+                    <span t-if="sheet.state == 'submitted'" class="badge text-bg-warning fs-6">Waiting your approval</span>
+                    <span t-elif="sheet.state == 'approved'" class="badge text-bg-success fs-6">Approved</span>
+                    <span t-elif="sheet.state == 'rejected'" class="badge text-bg-danger fs-6">Rejected</span>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6"><strong>Contract:</strong> <t t-out="sheet.contract_id.name"/></div>
+                    <div class="col-md-6"><strong>Period:</strong> <span t-field="sheet.date_from"/> - <span t-field="sheet.date_to"/></div>
+                    <div class="col-md-6" t-if="sheet.contract_id.site"><strong>Site:</strong> <t t-out="sheet.contract_id.site"/></div>
+                    <div class="col-md-6" t-if="sheet.approved_by"><strong>Decision by:</strong> <t t-out="sheet.approved_by"/></div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>Worker</th>
+                                <th>Job Position</th>
+                                <th class="text-end">Days</th>
+                                <th class="text-end">Regular Hours</th>
+                                <th class="text-end">Overtime Hours</th>
+                                <th>Note</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="sheet.line_ids" t-as="line">
+                                <td><t t-out="line.employee_id.name"/></td>
+                                <td><t t-out="line.job_id.name"/></td>
+                                <td class="text-end"><t t-out="line.days_worked"/></td>
+                                <td class="text-end"><t t-out="line.regular_hours"/></td>
+                                <td class="text-end"><t t-out="line.overtime_hours"/></td>
+                                <td><t t-out="line.note"/></td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr class="fw-bold">
+                                <td colspan="2">Total</td>
+                                <td class="text-end"><t t-out="sheet.total_days"/></td>
+                                <td class="text-end"><t t-out="sheet.total_hours"/></td>
+                                <td class="text-end"><t t-out="sheet.total_overtime"/></td>
+                                <td/>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div t-if="sheet.state == 'rejected' and sheet.reject_reason" class="alert alert-light border">
+                    <strong>Rejection reason:</strong> <t t-out="sheet.reject_reason"/>
+                </div>
+
+                <form t-if="sheet.state == 'submitted'" method="post"
+                      t-attf-action="/my/manpower/timesheets/#{sheet.id}/decision" class="card card-body mt-3">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <input type="hidden" name="access_token" t-att-value="access_token or ''"/>
+                    <label for="reason" class="form-label">Comment (required if you reject)</label>
+                    <textarea name="reason" id="reason" class="form-control mb-3" rows="2"/>
+                    <div class="d-flex gap-2">
+                        <button type="submit" name="decision" value="approve" class="btn btn-success">Approve Timesheet</button>
+                        <button type="submit" name="decision" value="reject" class="btn btn-outline-danger">Reject</button>
+                    </div>
+                </form>
+
+                <div class="mt-4">
+                    <t t-call="portal.message_thread"/>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

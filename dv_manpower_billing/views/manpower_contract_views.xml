@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_manpower_contract_form_billing" model="ir.ui.view">
+        <field name="name">dv.manpower.contract.form.billing</field>
+        <field name="model">dv.manpower.contract</field>
+        <field name="inherit_id" ref="dv_manpower_supply.view_manpower_contract_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_invoices" type="object" class="oe_stat_button" icon="fa-money" groups="account.group_account_invoice">
+                    <div class="o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="amount_invoiced" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                        </span>
+                        <span class="o_stat_text">Invoiced (<field name="invoice_count"/>)</span>
+                    </div>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

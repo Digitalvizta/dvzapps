@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Profitability analysis on timesheet lines -->
+    <record id="view_timesheet_line_profit_pivot" model="ir.ui.view">
+        <field name="name">dv.manpower.timesheet.line.profit.pivot</field>
+        <field name="model">dv.manpower.timesheet.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Profitability" sample="1">
+                <field name="partner_id" type="row"/>
+                <field name="date_from" interval="month" type="col"/>
+                <field name="amount_total" type="measure"/>
+                <field name="amount_cost" type="measure"/>
+                <field name="amount_profit" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_timesheet_line_profit_graph" model="ir.ui.view">
+        <field name="name">dv.manpower.timesheet.line.profit.graph</field>
+        <field name="model">dv.manpower.timesheet.line</field>
+        <field name="arch" type="xml">
+            <graph string="Profitability" type="bar" sample="1">
+                <field name="partner_id"/>
+                <field name="amount_profit" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_timesheet_line_profit_list" model="ir.ui.view">
+        <field name="name">dv.manpower.timesheet.line.profit.list</field>
+        <field name="model">dv.manpower.timesheet.line</field>
+        <field name="arch" type="xml">
+            <list string="Profit per Worker" create="0" edit="0">
+                <field name="date_from"/>
+                <field name="partner_id"/>
+                <field name="contract_id"/>
+                <field name="employee_id" widget="many2one_avatar_employee"/>
+                <field name="job_id" optional="show"/>
+                <field name="days_worked" sum="Total"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="amount_total" string="Revenue" sum="Total"/>
+                <field name="amount_cost" sum="Total"/>
+                <field name="amount_profit" sum="Total"
+                       decoration-success="amount_profit &gt; 0" decoration-danger="amount_profit &lt; 0"/>
+                <field name="margin_percent" avg="Average"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_timesheet_line_profit_search" model="ir.ui.view">
+        <field name="name">dv.manpower.timesheet.line.profit.search</field>
+        <field name="model">dv.manpower.timesheet.line</field>
+        <field name="arch" type="xml">
+            <search string="Profitability">
+                <field name="employee_id"/>
+                <field name="partner_id"/>
+                <field name="contract_id"/>
+                <filter name="filter_approved" string="Approved Timesheets" domain="[('sheet_state', '=', 'approved')]"/>
+                <filter name="filter_loss" string="Loss-making" domain="[('amount_profit', '&lt;', 0)]"/>
+                <separator/>
+                <filter name="filter_period" string="Period" date="date_from"/>
+                <group>
+                    <filter name="group_partner" string="Client" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_contract" string="Contract" context="{'group_by': 'contract_id'}"/>
+                    <filter name="group_employee" string="Worker" context="{'group_by': 'employee_id'}"/>
+                    <filter name="group_job" string="Job Position" context="{'group_by': 'job_id'}"/>
+                    <filter name="group_month" string="Month" context="{'group_by': 'date_from:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_manpower_profitability" model="ir.actions.act_window">
+        <field name="name">Profitability Analysis</field>
+        <field name="res_model">dv.manpower.timesheet.line</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="search_view_id" ref="view_timesheet_line_profit_search"/>
+        <field name="context">{'search_default_filter_approved': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No approved timesheets yet</p>
+            <p>Enter worker costs on the employee form (Worker Cost tab). Profit appears here once timesheets are approved.</p>
+        </field>
+    </record>
+
+    <record id="action_manpower_profitability_view_list" model="ir.actions.act_window.view">
+        <field name="sequence">3</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_timesheet_line_profit_list"/>
+        <field name="act_window_id" ref="action_manpower_profitability"/>
+    </record>
+
+    <menuitem id="menu_manpower_profitability" name="Profitability"
+              parent="dv_manpower_supply.menu_manpower_reporting"
+              action="action_manpower_profitability" sequence="10"
+              groups="dv_manpower_supply.group_manpower_manager"/>
+
+    <!-- Contract form: profitability tab -->
+    <record id="view_manpower_contract_form_profit" model="ir.ui.view">
+        <field name="name">dv.manpower.contract.form.profit</field>
+        <field name="model">dv.manpower.contract</field>
+        <field name="inherit_id" ref="dv_manpower_supply.view_manpower_contract_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='notes']" position="before">
+                <page string="Profitability" name="profitability" groups="dv_manpower_supply.group_manpower_manager">
+                    <group>
+                        <group string="Approved timesheets">
+                            <field name="profit_revenue"/>
+                            <field name="profit_cost"/>
+                            <field name="profit_amount" class="fw-bold"/>
+                            <field name="profit_margin"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Timesheet form: cost/profit columns for managers -->
+    <record id="view_manpower_timesheet_form_profit" model="ir.ui.view">
+        <field name="name">dv.manpower.timesheet.form.profit</field>
+        <field name="model">dv.manpower.timesheet</field>
+        <field name="inherit_id" ref="dv_manpower_billing.view_manpower_timesheet_form_billing"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='line_ids']/list/field[@name='amount_total']" position="after">
+                <field name="amount_cost" sum="Total" optional="show" groups="dv_manpower_supply.group_manpower_manager"/>
+                <field name="amount_profit" sum="Total" optional="show" groups="dv_manpower_supply.group_manpower_manager"/>
+            </xpath>
+            <xpath expr="//group/field[@name='amount_total']" position="after">
+                <field name="amount_profit" groups="dv_manpower_supply.group_manpower_manager"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
