@@ -1,3 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_dv_worker_document_user,dv.worker.document user,model_dv_worker_document,dv_manpower_supply.group_manpower_user,1,1,1,0
-access_dv_worker_document_manager,dv.worker.document manager,model_dv_worker_document,dv_manpower_supply.group_manpower_manager,1,1,1,1

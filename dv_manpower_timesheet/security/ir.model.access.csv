@@ -1,6 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_dv_manpower_timesheet_user,dv.manpower.timesheet user,model_dv_manpower_timesheet,dv_manpower_supply.group_manpower_user,1,1,1,0
-access_dv_manpower_timesheet_manager,dv.manpower.timesheet manager,model_dv_manpower_timesheet,dv_manpower_supply.group_manpower_manager,1,1,1,1
-access_dv_manpower_timesheet_line_user,dv.manpower.timesheet.line user,model_dv_manpower_timesheet_line,dv_manpower_supply.group_manpower_user,1,1,1,1
-access_dv_manpower_timesheet_portal,dv.manpower.timesheet portal,model_dv_manpower_timesheet,base.group_portal,1,0,0,0
-access_dv_manpower_timesheet_line_portal,dv.manpower.timesheet.line portal,model_dv_manpower_timesheet_line,base.group_portal,1,0,0,0
