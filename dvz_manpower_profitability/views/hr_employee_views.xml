@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_employee_form_manpower_cost" model="ir.ui.view">
+        <field name="name">hr.employee.form.manpower.cost</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='hr_settings']" position="before">
+                <page name="dvz_manpower_cost" string="Worker Cost" groups="dvz_manpower_supply.group_manpower_manager">
+                    <group>
+                        <group string="Monthly Cost">
+                            <field name="dv_cost_currency_id" invisible="1"/>
+                            <field name="dv_monthly_salary"/>
+                            <field name="dv_gosi_cost"/>
+                            <field name="dv_housing_cost"/>
+                            <field name="dv_transport_cost"/>
+                            <field name="dv_iqama_cost"/>
+                            <field name="dv_other_cost"/>
+                        </group>
+                        <group string="Total">
+                            <field name="dv_total_monthly_cost" class="fw-bold"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

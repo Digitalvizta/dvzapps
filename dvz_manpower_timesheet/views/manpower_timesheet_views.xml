@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_manpower_timesheet_list" model="ir.ui.view">
+        <field name="name">dvz.manpower.timesheet.list</field>
+        <field name="model">dvz.manpower.timesheet</field>
+        <field name="arch" type="xml">
+            <list string="Timesheets">
+                <field name="name"/>
+                <field name="contract_id"/>
+                <field name="partner_id"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="total_days" sum="Total"/>
+                <field name="total_hours" sum="Total" optional="show"/>
+                <field name="total_overtime" sum="Total"/>
+                <field name="state" widget="badge"
+                       decoration-info="state == 'submitted'"
+                       decoration-success="state == 'approved'"
+                       decoration-danger="state == 'rejected'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_manpower_timesheet_form" model="ir.ui.view">
+        <field name="name">dvz.manpower.timesheet.form</field>
+        <field name="model">dvz.manpower.timesheet</field>
+        <field name="arch" type="xml">
+            <form string="Timesheet">
+                <header>
+                    <button name="action_generate_lines" type="object" string="Fill from Assignments"
+                            class="btn-secondary" invisible="state != 'draft'"/>
+                    <button name="action_submit" type="object" string="Send to Client"
+                            class="btn-primary" invisible="state != 'draft'"/>
+                    <button name="action_approve_internal" type="object" string="Mark as Approved"
+                            invisible="state != 'submitted'"
+                            groups="dvz_manpower_supply.group_manpower_manager"/>
+                    <button name="action_preview_portal" type="object" string="Client Preview"
+                            invisible="state == 'draft'"/>
+                    <button name="action_draft" type="object" string="Reset to Draft"
+                            invisible="state not in ('submitted', 'rejected')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box"/>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="contract_id" readonly="state != 'draft'"/>
+                            <field name="partner_id"/>
+                        </group>
+                        <group>
+                            <label for="date_from" string="Period"/>
+                            <div class="o_row">
+                                <field name="date_from" readonly="state != 'draft'"/> -
+                                <field name="date_to" readonly="state != 'draft'"/>
+                            </div>
+                            <field name="approved_by" invisible="not approved_by"/>
+                            <field name="approval_date" invisible="not approval_date"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-danger" role="alert" invisible="state != 'rejected' or not reject_reason">
+                        <strong>Client comment: </strong><field name="reject_reason" class="d-inline"/>
+                    </div>
+                    <notebook>
+                        <page string="Workers" name="workers">
+                            <field name="line_ids" readonly="state != 'draft'">
+                                <list editable="bottom">
+                                    <field name="employee_id"/>
+                                    <field name="job_id"/>
+                                    <field name="assignment_id" column_invisible="1"/>
+                                    <field name="days_worked" sum="Total"/>
+                                    <field name="regular_hours" sum="Total"/>
+                                    <field name="overtime_hours" sum="Total"/>
+                                    <field name="note" optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_manpower_timesheet_search" model="ir.ui.view">
+        <field name="name">dvz.manpower.timesheet.search</field>
+        <field name="model">dvz.manpower.timesheet</field>
+        <field name="arch" type="xml">
+            <search string="Timesheets">
+                <field name="name"/>
+                <field name="contract_id"/>
+                <field name="partner_id"/>
+                <filter name="filter_draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="filter_waiting" string="Waiting Client" domain="[('state', '=', 'submitted')]"/>
+                <filter name="filter_approved" string="Approved" domain="[('state', '=', 'approved')]"/>
+                <filter name="filter_rejected" string="Rejected" domain="[('state', '=', 'rejected')]"/>
+                <separator/>
+                <filter name="filter_date" string="Period" date="date_from"/>
+                <group>
+                    <filter name="group_partner" string="Client" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_manpower_timesheet" model="ir.actions.act_window">
+        <field name="name">Timesheets</field>
+        <field name="res_model">dvz.manpower.timesheet</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create the first monthly timesheet</p>
+            <p>Pick a contract and a period, click "Fill from Assignments", then send it to the client for approval.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_manpower_timesheets" name="Timesheets"
+              parent="dvz_manpower_supply.menu_manpower_operations"
+              action="action_manpower_timesheet" sequence="25"/>
+</odoo>

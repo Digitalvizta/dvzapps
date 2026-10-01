@@ -117,3 +117,39 @@ Create these in your chart of accounts before you start billing:
 ## Support
 
 DigitalVizta | info@digitalvizta.net | WhatsApp +92 304 6117529 | https://digitalvizta.net | https://www.linkedin.com/company/digitalvizta-tech
+
+---
+
+# DigitalVizta Manpower Supply Suite for Odoo 19
+
+Six modules for Saudi manpower supply / labor outsourcing companies (Ajeer secondment). They run on Odoo 19 Community and Enterprise, and every module name starts with `dvz_manpower_`.
+
+| Technical name | App name (manifest) | License | Price (USD) | Depends on |
+|---|---|---|---|---|
+| dvz_manpower_supply | Manpower Supply Contracts (KSA) | LGPL-3 | Free | hr, mail |
+| dvz_manpower_documents | Worker Documents & Ajeer Expiry Alerts (KSA) | OPL-1 | 49 | dvz_manpower_supply |
+| dvz_manpower_timesheet | Manpower Timesheets & Client Portal Approval (KSA) | OPL-1 | 79 | dvz_manpower_supply, portal |
+| dvz_manpower_billing | Manpower Billing: Invoices from Timesheets (KSA, ZATCA) | OPL-1 | 79 | dvz_manpower_timesheet, account |
+| dvz_manpower_profitability | Manpower Profitability: Profit per Worker & Contract (KSA) | OPL-1 | 49 | dvz_manpower_billing |
+| dvz_manpower_suite | Manpower Supply Suite for Saudi Manpower Companies | OPL-1 | (no own price) | all five |
+
+What buyers pay on the Odoo Apps Store (module + paid dependencies):
+
+- Billing costs 79 + 79 = 158.
+- Profitability costs 49 + 79 + 79 = 207.
+- The suite costs the sum of all paid modules, which is 256.
+
+## Install (test server first)
+
+1. Copy the `dvz_manpower_*` folders into your custom addons path.
+2. Restart Odoo, go to Apps and click Update Apps List.
+3. Install **Manpower Supply Contracts** first, then the paid modules you need, or install **Manpower Supply Suite** to get everything.
+
+Quick test: create a supply contract, add a rate line and activate it, assign a worker, add an Iqama that expires soon, create this month's timesheet ("Fill from Assignments"), send it to the client, approve it from "Client Preview", create the invoice, then enter worker costs and open Reporting > Profitability.
+
+Notes:
+
+- Set 15% VAT on the "Manpower Supply Service" and "Manpower Overtime" products if the chart of accounts was installed after the billing module.
+- Users who create invoices need Invoicing rights.
+
+**Important:** These modules were written for Odoo 19 and passed static checks (Python compile, XML parsing, Odoo view schemas, view fields and buttons, XML references, access rules) and a code review against the Odoo 19 source. They were not installed on a live Odoo 19 server. Install on a test copy first and fix any error before going to production or publishing.

@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<odoo>
-    <menuitem id="menu_dvz_contract_ipc" name="Client certificates" parent="dvz_contract.menu_dvz_contract_billing"
-              action="action_dvz_contract_ipc" sequence="10"/>
-    <menuitem id="menu_dvz_contract_ipc_analysis" name="Billing analysis" parent="dvz_contract.menu_dvz_contract_reporting"
-              action="action_dvz_contract_ipc_analysis" sequence="20"/>
-</odoo>

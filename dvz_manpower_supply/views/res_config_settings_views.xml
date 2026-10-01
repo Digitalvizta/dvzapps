@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_manpower" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.manpower</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="75"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Manpower Supply" string="Manpower Supply" name="dvz_manpower_supply"
+                     groups="dvz_manpower_supply.group_manpower_manager">
+                    <block title="Working Time" name="dv_working_time_container">
+                        <setting id="dv_daily_hours_setting" string="Working hours per day"
+                                 help="Used to convert daily and monthly rates and overtime.">
+                            <field name="dv_daily_hours" widget="float_time"/>
+                        </setting>
+                        <setting id="dv_overtime_factor_setting" string="Overtime rate factor"
+                                 help="Saudi Labor Law default: 1.5 (hourly wage + 50%).">
+                            <field name="dv_overtime_factor"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_manpower_settings" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'dvz_manpower_supply', 'bin_size': False}</field>
+    </record>
+</odoo>

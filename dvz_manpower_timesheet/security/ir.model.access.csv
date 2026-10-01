@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dvz_manpower_timesheet_user,dvz.manpower.timesheet user,model_dvz_manpower_timesheet,dvz_manpower_supply.group_manpower_user,1,1,1,0
+access_dvz_manpower_timesheet_manager,dvz.manpower.timesheet manager,model_dvz_manpower_timesheet,dvz_manpower_supply.group_manpower_manager,1,1,1,1
+access_dvz_manpower_timesheet_line_user,dvz.manpower.timesheet.line user,model_dvz_manpower_timesheet_line,dvz_manpower_supply.group_manpower_user,1,1,1,1
+access_dvz_manpower_timesheet_portal,dvz.manpower.timesheet portal,model_dvz_manpower_timesheet,base.group_portal,1,0,0,0
+access_dvz_manpower_timesheet_line_portal,dvz.manpower.timesheet.line portal,model_dvz_manpower_timesheet_line,base.group_portal,1,0,0,0
