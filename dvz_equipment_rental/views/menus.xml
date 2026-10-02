@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_equipment_root" name="Equipment Rental"
+              web_icon="dvz_equipment_rental,static/description/icon.png"
+              groups="group_equipment_user" sequence="46"/>
+
+    <menuitem id="menu_equipment_operations" name="Rentals"
+              parent="menu_equipment_root" sequence="10"/>
+    <menuitem id="menu_rental_contracts" name="Rental Contracts"
+              parent="menu_equipment_operations" action="action_rental_contract" sequence="10"/>
+    <menuitem id="menu_rental_schedule" name="Rental Schedule"
+              parent="menu_equipment_operations" action="action_rental_schedule" sequence="20"/>
+
+    <menuitem id="menu_equipment_fleet" name="Equipment"
+              parent="menu_equipment_root" sequence="20"/>
+    <menuitem id="menu_equipment_list" name="Equipment"
+              parent="menu_equipment_fleet" action="action_equipment" sequence="10"/>
+
+    <menuitem id="menu_equipment_reporting" name="Reporting"
+              parent="menu_equipment_root" sequence="80"/>
+    <menuitem id="menu_equipment_config" name="Configuration"
+              parent="menu_equipment_root" sequence="90" groups="group_equipment_manager"/>
+    <menuitem id="menu_equipment_settings" name="Settings"
+              parent="menu_equipment_config" action="action_equipment_settings" sequence="1"/>
+    <menuitem id="menu_equipment_categories" name="Equipment Categories"
+              parent="menu_equipment_config" action="action_equipment_category" sequence="10"/>
+</odoo>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_equipment_profit" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.equipment.profit</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="dvz_equipment_rental.res_config_settings_view_form_equipment"/>
+        <field name="arch" type="xml">
+            <xpath expr="//app[@name='dvz_equipment_rental']" position="inside">
+                <block title="Profitability" name="dv_eq_profit_container">
+                    <setting id="dv_eq_fuel_price_setting" string="Diesel price per litre"
+                             help="Fuel on log sheets is costed at this price when you supply the fuel.">
+                        <field name="dv_eq_fuel_price"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

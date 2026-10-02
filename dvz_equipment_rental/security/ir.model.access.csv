@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dvz_equipment_category_user,dvz.equipment.category user,model_dvz_equipment_category,group_equipment_user,1,0,0,0
+access_dvz_equipment_category_manager,dvz.equipment.category manager,model_dvz_equipment_category,group_equipment_manager,1,1,1,1
+access_dvz_equipment_user,dvz.equipment user,model_dvz_equipment,group_equipment_user,1,1,1,0
+access_dvz_equipment_manager,dvz.equipment manager,model_dvz_equipment,group_equipment_manager,1,1,1,1
+access_dvz_rental_contract_user,dvz.rental.contract user,model_dvz_rental_contract,group_equipment_user,1,1,1,0
+access_dvz_rental_contract_manager,dvz.rental.contract manager,model_dvz_rental_contract,group_equipment_manager,1,1,1,1
+access_dvz_rental_contract_line_user,dvz.rental.contract.line user,model_dvz_rental_contract_line,group_equipment_user,1,1,1,1

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_logsheet_line_profit_pivot" model="ir.ui.view">
+        <field name="name">dvz.equipment.logsheet.line.profit.pivot</field>
+        <field name="model">dvz.equipment.logsheet.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Profitability" sample="1">
+                <field name="equipment_id" type="row"/>
+                <field name="date" interval="month" type="col"/>
+                <field name="amount_total" type="measure"/>
+                <field name="amount_cost" type="measure"/>
+                <field name="amount_profit" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_logsheet_line_profit_graph" model="ir.ui.view">
+        <field name="name">dvz.equipment.logsheet.line.profit.graph</field>
+        <field name="model">dvz.equipment.logsheet.line</field>
+        <field name="arch" type="xml">
+            <graph string="Profitability" type="bar" sample="1">
+                <field name="equipment_id"/>
+                <field name="amount_profit" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_logsheet_line_profit_list" model="ir.ui.view">
+        <field name="name">dvz.equipment.logsheet.line.profit.list</field>
+        <field name="model">dvz.equipment.logsheet.line</field>
+        <field name="arch" type="xml">
+            <list string="Profit per Machine" create="0" edit="0">
+                <field name="date"/>
+                <field name="partner_id"/>
+                <field name="contract_id"/>
+                <field name="equipment_id"/>
+                <field name="category_id" optional="show"/>
+                <field name="working_hours" sum="Total"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="amount_total" string="Revenue" sum="Total"/>
+                <field name="amount_cost" sum="Total"/>
+                <field name="amount_profit" sum="Total"
+                       decoration-success="amount_profit &gt; 0" decoration-danger="amount_profit &lt; 0"/>
+                <field name="margin_percent" avg="Average"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_logsheet_line_profit_search" model="ir.ui.view">
+        <field name="name">dvz.equipment.logsheet.line.profit.search</field>
+        <field name="model">dvz.equipment.logsheet.line</field>
+        <field name="arch" type="xml">
+            <search string="Profitability">
+                <field name="equipment_id"/>
+                <field name="partner_id"/>
+                <field name="contract_id"/>
+                <filter name="filter_approved" string="Approved Log Sheets" domain="[('sheet_state', '=', 'approved')]"/>
+                <filter name="filter_loss" string="Loss-making" domain="[('amount_profit', '&lt;', 0)]"/>
+                <separator/>
+                <filter name="filter_date" string="Date" date="date"/>
+                <group>
+                    <filter name="group_equipment" string="Machine" context="{'group_by': 'equipment_id'}"/>
+                    <filter name="group_category" string="Category" context="{'group_by': 'category_id'}"/>
+                    <filter name="group_partner" string="Client" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_contract" string="Rental" context="{'group_by': 'contract_id'}"/>
+                    <filter name="group_month" string="Month" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_equipment_profitability" model="ir.actions.act_window">
+        <field name="name">Profitability Analysis</field>
+        <field name="res_model">dvz.equipment.logsheet.line</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="search_view_id" ref="view_logsheet_line_profit_search"/>
+        <field name="context">{'search_default_filter_approved': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No approved log sheets yet</p>
+            <p>Enter the monthly ownership and operator cost on each machine (Cost &amp; Profit tab). Profit appears here once log sheets are approved.</p>
+        </field>
+    </record>
+
+    <record id="action_equipment_maintenance_cost" model="ir.actions.act_window">
+        <field name="name">Maintenance Cost</field>
+        <field name="res_model">dvz.equipment.service</field>
+        <field name="view_mode">pivot,list,form</field>
+        <field name="domain">[('state', '!=', 'cancelled')]</field>
+    </record>
+
+    <menuitem id="menu_equipment_profitability" name="Profitability"
+              parent="dvz_equipment_rental.menu_equipment_reporting"
+              action="action_equipment_profitability" sequence="10"
+              groups="dvz_equipment_rental.group_equipment_manager"/>
+    <menuitem id="menu_equipment_maintenance_cost" name="Maintenance Cost"
+              parent="dvz_equipment_rental.menu_equipment_reporting"
+              action="action_equipment_maintenance_cost" sequence="20"
+              groups="dvz_equipment_rental.group_equipment_manager"/>
+</odoo>

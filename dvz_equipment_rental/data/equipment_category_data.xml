@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="category_crane" model="dvz.equipment.category">
+            <field name="name">Cranes</field>
+            <field name="code">CRN</field>
+        </record>
+        <record id="category_excavator" model="dvz.equipment.category">
+            <field name="name">Excavators</field>
+            <field name="code">EXC</field>
+        </record>
+        <record id="category_loader" model="dvz.equipment.category">
+            <field name="name">Loaders &amp; Bulldozers</field>
+            <field name="code">LDR</field>
+        </record>
+        <record id="category_truck" model="dvz.equipment.category">
+            <field name="name">Trucks &amp; Trailers</field>
+            <field name="code">TRK</field>
+        </record>
+        <record id="category_generator" model="dvz.equipment.category">
+            <field name="name">Generators &amp; Compressors</field>
+            <field name="code">GEN</field>
+        </record>
+        <record id="category_access" model="dvz.equipment.category">
+            <field name="name">Manlifts &amp; Forklifts</field>
+            <field name="code">LFT</field>
+        </record>
+    </data>
+</odoo>

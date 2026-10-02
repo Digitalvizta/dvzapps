@@ -1,0 +1,6 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dvz_equipment_logsheet_user,dvz.equipment.logsheet user,model_dvz_equipment_logsheet,dvz_equipment_rental.group_equipment_user,1,1,1,0
+access_dvz_equipment_logsheet_manager,dvz.equipment.logsheet manager,model_dvz_equipment_logsheet,dvz_equipment_rental.group_equipment_manager,1,1,1,1
+access_dvz_equipment_logsheet_line_user,dvz.equipment.logsheet.line user,model_dvz_equipment_logsheet_line,dvz_equipment_rental.group_equipment_user,1,1,1,1
+access_dvz_equipment_logsheet_portal,dvz.equipment.logsheet portal,model_dvz_equipment_logsheet,base.group_portal,1,0,0,0
+access_dvz_equipment_logsheet_line_portal,dvz.equipment.logsheet.line portal,model_dvz_equipment_logsheet_line,base.group_portal,1,0,0,0

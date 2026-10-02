@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_equipment_form_maintenance" model="ir.ui.view">
+        <field name="name">dvz.equipment.form.maintenance</field>
+        <field name="model">dvz.equipment</field>
+        <field name="inherit_id" ref="dvz_equipment_rental.view_equipment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_services" type="object" class="oe_stat_button" icon="fa-wrench">
+                    <div class="o_stat_info">
+                        <span class="o_stat_value"><field name="maintenance_cost" widget="monetary"/></span>
+                        <span class="o_stat_text"><field name="service_count"/> Services</span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//widget[@name='web_ribbon']" position="after">
+                <div class="alert alert-warning" role="alert" invisible="not document_alert">
+                    A document of this machine is expired or expires soon. See the Documents tab.
+                </div>
+                <div class="alert alert-danger" role="alert" invisible="service_status != 'overdue'">
+                    Preventive service is overdue.
+                </div>
+            </xpath>
+            <xpath expr="//page[@name='rates']" position="after">
+                <page string="Service Plan" name="service_plan">
+                    <group>
+                        <group>
+                            <field name="service_interval"/>
+                            <field name="last_service_meter"/>
+                            <field name="last_service_date"/>
+                        </group>
+                        <group>
+                            <field name="next_service_meter"/>
+                            <field name="hours_to_service"/>
+                            <field name="service_status" widget="badge"
+                                   decoration-success="service_status == 'ok'"
+                                   decoration-warning="service_status == 'due_soon'"
+                                   decoration-danger="service_status == 'overdue'"/>
+                        </group>
+                    </group>
+                </page>
+                <page string="Documents" name="documents">
+                    <field name="document_ids" context="{'default_equipment_id': id}">
+                        <list editable="bottom" decoration-danger="status == 'expired'" decoration-warning="status == 'expiring'">
+                            <field name="doc_type"/>
+                            <field name="number"/>
+                            <field name="issuer" optional="show"/>
+                            <field name="expiry_date"/>
+                            <field name="blocks_dispatch" optional="hide"/>
+                            <field name="status" widget="badge"
+                                   decoration-success="status == 'valid'"
+                                   decoration-warning="status == 'expiring'"
+                                   decoration-danger="status == 'expired'"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_equipment_list_maintenance" model="ir.ui.view">
+        <field name="name">dvz.equipment.list.maintenance</field>
+        <field name="model">dvz.equipment</field>
+        <field name="inherit_id" ref="dvz_equipment_rental.view_equipment_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='hour_meter']" position="after">
+                <field name="next_service_meter" optional="hide"/>
+                <field name="service_status" optional="show" widget="badge"
+                       decoration-success="service_status == 'ok'"
+                       decoration-warning="service_status == 'due_soon'"
+                       decoration-danger="service_status == 'overdue'"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_equipment_search_maintenance" model="ir.ui.view">
+        <field name="name">dvz.equipment.search.maintenance</field>
+        <field name="model">dvz.equipment</field>
+        <field name="inherit_id" ref="dvz_equipment_rental.view_equipment_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='filter_maintenance']" position="after">
+                <filter name="filter_service_due" string="Service Due" domain="[('service_status', 'in', ('due_soon', 'overdue'))]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

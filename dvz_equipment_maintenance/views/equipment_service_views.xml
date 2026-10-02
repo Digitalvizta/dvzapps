@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_equipment_service_list" model="ir.ui.view">
+        <field name="name">dvz.equipment.service.list</field>
+        <field name="model">dvz.equipment.service</field>
+        <field name="arch" type="xml">
+            <list string="Service Log" decoration-muted="state == 'cancelled'">
+                <field name="date"/>
+                <field name="equipment_id"/>
+                <field name="service_type"/>
+                <field name="name"/>
+                <field name="meter_reading" optional="show"/>
+                <field name="vendor_id" optional="show"/>
+                <field name="downtime_hours" sum="Total" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="cost" sum="Total"/>
+                <field name="state" widget="badge"
+                       decoration-warning="state == 'open'"
+                       decoration-success="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_equipment_service_form" model="ir.ui.view">
+        <field name="name">dvz.equipment.service.form</field>
+        <field name="model">dvz.equipment.service</field>
+        <field name="arch" type="xml">
+            <form string="Service / Repair">
+                <header>
+                    <button name="action_done" type="object" string="Mark as Done" class="btn-primary"
+                            invisible="state != 'open'"/>
+                    <button name="action_cancel" type="object" string="Cancel" invisible="state != 'open'"/>
+                    <button name="action_reopen" type="object" string="Reopen" invisible="state == 'open'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="open,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. 250 h service: engine oil and filters"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="equipment_id"/>
+                            <field name="service_type"/>
+                            <field name="date"/>
+                            <field name="date_done" invisible="not date_done"/>
+                            <field name="meter_reading"/>
+                        </group>
+                        <group>
+                            <field name="vendor_id"/>
+                            <field name="technician"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="cost"/>
+                            <field name="downtime_hours"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <field name="notes" placeholder="Work done, parts replaced..."/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_equipment_service_search" model="ir.ui.view">
+        <field name="name">dvz.equipment.service.search</field>
+        <field name="model">dvz.equipment.service</field>
+        <field name="arch" type="xml">
+            <search string="Service Log">
+                <field name="equipment_id"/>
+                <field name="name"/>
+                <field name="vendor_id"/>
+                <filter name="filter_open" string="In Progress" domain="[('state', '=', 'open')]"/>
+                <filter name="filter_breakdown" string="Breakdowns" domain="[('service_type', '=', 'breakdown')]"/>
+                <filter name="filter_preventive" string="Preventive" domain="[('service_type', '=', 'preventive')]"/>
+                <separator/>
+                <filter name="filter_date" string="Date" date="date"/>
+                <group>
+                    <filter name="group_equipment" string="Equipment" context="{'group_by': 'equipment_id'}"/>
+                    <filter name="group_type" string="Type" context="{'group_by': 'service_type'}"/>
+                    <filter name="group_month" string="Month" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_equipment_service_pivot" model="ir.ui.view">
+        <field name="name">dvz.equipment.service.pivot</field>
+        <field name="model">dvz.equipment.service</field>
+        <field name="arch" type="xml">
+            <pivot string="Maintenance Cost" sample="1">
+                <field name="equipment_id" type="row"/>
+                <field name="service_type" type="col"/>
+                <field name="cost" type="measure"/>
+                <field name="downtime_hours" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_equipment_service" model="ir.actions.act_window">
+        <field name="name">Service Log</field>
+        <field name="res_model">dvz.equipment.service</field>
+        <field name="view_mode">list,form,pivot</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Log the first service or repair</p>
+            <p>Preventive services reset the service counter of the machine when done.</p>
+        </field>
+    </record>
+
+    <record id="action_equipment_service_due" model="ir.actions.act_window">
+        <field name="name">Service Due</field>
+        <field name="res_model">dvz.equipment</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('service_status', 'in', ('due_soon', 'overdue'))]</field>
+    </record>
+
+    <menuitem id="menu_equipment_maintenance" name="Maintenance"
+              parent="dvz_equipment_rental.menu_equipment_root" sequence="30"/>
+    <menuitem id="menu_equipment_service" name="Service Log"
+              parent="menu_equipment_maintenance" action="action_equipment_service" sequence="10"/>
+    <menuitem id="menu_equipment_service_due" name="Service Due"
+              parent="menu_equipment_maintenance" action="action_equipment_service_due" sequence="20"/>
+</odoo>

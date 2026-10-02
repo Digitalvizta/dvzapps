@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rental_contract_form_logsheet" model="ir.ui.view">
+        <field name="name">dvz.rental.contract.form.logsheet</field>
+        <field name="model">dvz.rental.contract</field>
+        <field name="inherit_id" ref="dvz_equipment_rental.view_rental_contract_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_logsheets" type="object" class="oe_stat_button" icon="fa-clock-o">
+                    <field name="logsheet_count" widget="statinfo" string="Log Sheets"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

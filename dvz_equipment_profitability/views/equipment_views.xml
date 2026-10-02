@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_equipment_form_profit" model="ir.ui.view">
+        <field name="name">dvz.equipment.form.profit</field>
+        <field name="model">dvz.equipment</field>
+        <field name="inherit_id" ref="dvz_equipment_rental.view_equipment_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='rates']" position="after">
+                <page string="Cost &amp; Profit" name="cost_profit" groups="dvz_equipment_rental.group_equipment_manager">
+                    <group>
+                        <group string="Monthly Cost">
+                            <field name="ownership_cost_month"/>
+                            <field name="operator_cost_month"/>
+                        </group>
+                        <group string="Lifetime (approved log sheets)">
+                            <field name="profit_revenue"/>
+                            <field name="maintenance_cost"/>
+                            <field name="profit_cost"/>
+                            <field name="profit_amount" class="fw-bold"/>
+                            <field name="profit_margin"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_rental_contract_form_profit" model="ir.ui.view">
+        <field name="name">dvz.rental.contract.form.profit</field>
+        <field name="model">dvz.rental.contract</field>
+        <field name="inherit_id" ref="dvz_equipment_rental.view_rental_contract_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='line_ids']/list/field[@name='with_operator']" position="after">
+                <field name="fuel_by_owner" optional="show"/>
+            </xpath>
+            <xpath expr="//page[@name='notes']" position="before">
+                <page string="Profitability" name="profitability" groups="dvz_equipment_rental.group_equipment_manager">
+                    <group>
+                        <group string="Approved log sheets">
+                            <field name="profit_revenue"/>
+                            <field name="profit_cost"/>
+                            <field name="profit_amount" class="fw-bold"/>
+                            <field name="profit_margin"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_equipment_logsheet_form_profit" model="ir.ui.view">
+        <field name="name">dvz.equipment.logsheet.form.profit</field>
+        <field name="model">dvz.equipment.logsheet</field>
+        <field name="inherit_id" ref="dvz_equipment_rental_billing.view_equipment_logsheet_form_billing"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='line_ids']/list/field[@name='amount_total']" position="after">
+                <field name="amount_cost" sum="Total" optional="show" groups="dvz_equipment_rental.group_equipment_manager"/>
+                <field name="amount_profit" sum="Total" optional="show" groups="dvz_equipment_rental.group_equipment_manager"/>
+            </xpath>
+            <xpath expr="//group/field[@name='amount_total']" position="after">
+                <field name="amount_profit" groups="dvz_equipment_rental.group_equipment_manager"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rental_contract_form_billing" model="ir.ui.view">
+        <field name="name">dvz.rental.contract.form.billing</field>
+        <field name="model">dvz.rental.contract</field>
+        <field name="inherit_id" ref="dvz_equipment_rental.view_rental_contract_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_cancel']" position="before">
+                <button name="action_invoice_mobilization" type="object" string="Invoice Mobilization"
+                        groups="account.group_account_invoice"
+                        invisible="state not in ('confirmed', 'on_rent') or not mobilization_fee or mobilization_invoiced"/>
+                <button name="action_invoice_demobilization" type="object" string="Invoice Demobilization"
+                        groups="account.group_account_invoice"
+                        invisible="state != 'returned' or not demobilization_fee or demobilization_invoiced"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_invoices" type="object" class="oe_stat_button" icon="fa-pencil-square-o"
+                        groups="account.group_account_invoice" invisible="not invoice_count">
+                    <div class="o_stat_info">
+                        <span class="o_stat_value"><field name="amount_invoiced" widget="monetary"/></span>
+                        <span class="o_stat_text"><field name="invoice_count"/> Invoices</span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//field[@name='mobilization_fee']" position="after">
+                <field name="mobilization_invoiced" invisible="not mobilization_fee" groups="account.group_account_invoice"/>
+            </xpath>
+            <xpath expr="//field[@name='demobilization_fee']" position="after">
+                <field name="demobilization_invoiced" invisible="not demobilization_fee" groups="account.group_account_invoice"/>
+            </xpath>
+            <xpath expr="//field[@name='line_ids']/list/field[@name='rate']" position="after">
+                <field name="min_hours" optional="show" readonly="rate_type != 'hour'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

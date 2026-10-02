@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_equipment" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.equipment.rental</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="76"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Equipment Rental" string="Equipment Rental" name="dvz_equipment_rental"
+                     groups="dvz_equipment_rental.group_equipment_manager">
+                    <block title="Rental Rates" name="dv_eq_rates_container">
+                        <setting id="dv_eq_daily_hours_setting" string="Hours included in a daily rate"
+                                 help="Standard working hours per day for a machine (e.g. 8 or 10). Used to fill log sheets and to bill extra hours.">
+                            <field name="dv_eq_daily_hours" widget="float_time"/>
+                        </setting>
+                        <setting id="dv_eq_week_days_setting" string="Days included in a weekly rate"
+                                 help="Working days per week used to prorate weekly rates.">
+                            <field name="dv_eq_week_days"/>
+                        </setting>
+                        <setting id="dv_eq_extra_factor_setting" string="Extra hours factor"
+                                 help="Hours above the daily standard are billed at the hourly equivalent multiplied by this factor (1.0 = same rate).">
+                            <field name="dv_eq_extra_factor"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_equipment_settings" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'dvz_equipment_rental', 'bin_size': False}</field>
+    </record>
+</odoo>
