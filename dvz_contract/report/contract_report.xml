@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_dvz_contract" model="ir.actions.report">
+        <field name="name">Contract Summary</field>
+        <field name="model">dvz.contract</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dvz_contract.report_dvz_contract</field>
+        <field name="report_file">dvz_contract.report_dvz_contract</field>
+        <field name="print_report_name">'Contract - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_dvz_contract"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_dvz_contract_document">
+        <t t-call="web.external_layout">
+            <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)"/>
+            <t t-set="address">
+                <div t-field="o.partner_id" t-options="{'widget': 'contact', 'fields': ['address', 'name', 'vat'], 'no_marker': True}"/>
+            </t>
+            <div class="page">
+                <h2>Contract <span t-field="o.name"/></h2>
+                <p t-if="o.title"><strong t-field="o.title"/></p>
+                <div class="row mb-3">
+                    <div class="col-4" t-if="o.project_id"><strong>Project:</strong> <span t-field="o.project_id"/></div>
+                    <div class="col-4" t-if="o.date_start"><strong>Start:</strong> <span t-field="o.date_start"/></div>
+                    <div class="col-4" t-if="o.date_end"><strong>Completion:</strong> <span t-field="o.date_end"/></div>
+                </div>
+                <h4>Bill of Quantities</h4>
+                <table class="table table-sm o_main_table">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Description</th>
+                            <th>Unit</th>
+                            <th class="text-end">Qty</th>
+                            <th class="text-end">Rate</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="o.line_ids" t-as="line">
+                            <tr t-if="line.display_type == 'line_section'" class="bg-200 fw-bold">
+                                <td colspan="6"><span t-field="line.name"/></td>
+                            </tr>
+                            <tr t-elif="line.display_type == 'line_note'" class="fst-italic">
+                                <td colspan="6"><span t-field="line.name"/></td>
+                            </tr>
+                            <tr t-else="">
+                                <td><span t-field="line.item_no"/></td>
+                                <td><span t-field="line.name"/></td>
+                                <td><span t-field="line.uom_id"/></td>
+                                <td class="text-end"><span t-field="line.quantity"/></td>
+                                <td class="text-end"><span t-field="line.price_unit"/></td>
+                                <td class="text-end"><span t-field="line.price_subtotal"/></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+                <div class="row justify-content-end">
+                    <div class="col-5">
+                        <table class="table table-sm">
+                            <tr class="fw-bold"><td>Contract Value (excl. tax)</td><td class="text-end"><span t-field="o.amount_untaxed"/></td></tr>
+                        </table>
+                    </div>
+                </div>
+                <h4>Commercial Terms</h4>
+                <table class="table table-sm">
+                    <tr><td>Retention</td><td><span t-esc="'%.2f' % o.retention_percent"/> %</td></tr>
+                    <tr><td>Advance payment</td><td><span t-esc="'%.2f' % o.advance_percent"/> %</td></tr>
+                    <tr><td>Advance recovery per certificate</td><td><span t-esc="'%.2f' % o.advance_recovery_percent"/> %</td></tr>
+                    <tr><td>Defects liability period</td><td><span t-field="o.defects_months"/> months</td></tr>
+                    <tr t-if="o.tax_ids"><td>Taxes</td><td><span t-esc="', '.join(o.tax_ids.mapped('name'))"/></td></tr>
+                </table>
+                <div t-if="o.scope"><h4>Scope of Work</h4><div t-field="o.scope"/></div>
+                <div t-if="o.notes"><h4>Terms &amp; Notes</h4><div t-field="o.notes"/></div>
+                <div class="row mt-5">
+                    <div class="col-6"><p>For the Contractor</p><p class="mt-4">______________________</p></div>
+                    <div class="col-6"><p>For the Client</p><p class="mt-4">______________________</p></div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_dvz_contract">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="dvz_contract.report_dvz_contract_document"/>
+            </t>
+        </t>
+    </template>
+</odoo>

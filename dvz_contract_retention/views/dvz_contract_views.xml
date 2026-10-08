@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_contract_view_form_retention" model="ir.ui.view">
+        <field name="name">dvz.contract.form.retention</field>
+        <field name="model">dvz.contract</field>
+        <field name="inherit_id" ref="dvz_contract_ipc.dvz_contract_view_form_ipc"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_close']" position="before">
+                <button name="action_new_release" string="Release Retention" type="object"
+                        invisible="state not in ('handover', 'closed') or retention_balance &lt;= 0"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_guarantees" type="object" class="oe_stat_button" icon="fa-university">
+                    <field name="guarantee_count" widget="statinfo" string="Guarantees"/>
+                </button>
+            </xpath>
+            <xpath expr="//page[@name='billing']//field[@name='retention_held']" position="after">
+                <field name="retention_released"/>
+                <field name="retention_balance"/>
+            </xpath>
+            <xpath expr="//page[@name='billing']" position="after">
+                <page string="Retention &amp; Guarantees" name="retention" invisible="state == 'draft'">
+                    <group>
+                        <group string="Retention">
+                            <field name="retention_held"/>
+                            <field name="retention_released"/>
+                            <field name="retention_balance"/>
+                            <field name="dlp_end_date"/>
+                        </group>
+                    </group>
+                    <field name="release_ids" readonly="1">
+                        <list>
+                            <field name="name"/>
+                            <field name="date"/>
+                            <field name="release_type"/>
+                            <field name="currency_id" column_invisible="True"/>
+                            <field name="amount" sum="Total"/>
+                            <field name="state" widget="badge"/>
+                        </list>
+                    </field>
+                    <field name="guarantee_ids" context="{'default_contract_id': id, 'default_partner_id': partner_id, 'default_currency_id': currency_id}">
+                        <list>
+                            <field name="name"/>
+                            <field name="guarantee_type"/>
+                            <field name="bank_id"/>
+                            <field name="expiry_date"/>
+                            <field name="currency_id" column_invisible="True"/>
+                            <field name="amount"/>
+                            <field name="state" widget="badge"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

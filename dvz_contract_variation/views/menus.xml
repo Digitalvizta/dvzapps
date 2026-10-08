@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_dvz_variation" name="Variation Orders" parent="dvz_contract.menu_dvz_contracts"
+              action="action_dvz_variation" sequence="30"/>
+</odoo>

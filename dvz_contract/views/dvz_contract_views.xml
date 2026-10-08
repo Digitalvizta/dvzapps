@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- BOQ line list (stand-alone, for analysis) -->
+    <record id="dvz_contract_line_view_list" model="ir.ui.view">
+        <field name="name">dvz.contract.line.list</field>
+        <field name="model">dvz.contract.line</field>
+        <field name="arch" type="xml">
+            <list string="BOQ Items" create="0" edit="0">
+                <field name="contract_id"/>
+                <field name="item_no"/>
+                <field name="name"/>
+                <field name="uom_id"/>
+                <field name="quantity" sum="Total"/>
+                <field name="price_unit"/>
+                <field name="price_subtotal" sum="Total"/>
+                <field name="cost_subtotal" sum="Total" groups="dvz_contract.group_dvz_show_cost"/>
+                <field name="currency_id" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dvz_contract_view_form" model="ir.ui.view">
+        <field name="name">dvz.contract.form</field>
+        <field name="model">dvz.contract</field>
+        <field name="arch" type="xml">
+            <form string="Contract">
+                <header>
+                    <button name="action_confirm" string="Confirm" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_handover" string="Hand Over" type="object" invisible="state != 'progress'"
+                            confirm="Mark this contract as handed over? The defects liability period starts today."/>
+                    <button name="action_close" string="Close" type="object" invisible="state != 'handover'"/>
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state not in ('draft', 'progress')"/>
+                    <button name="action_draft" string="Reset to Draft" type="object" invisible="state != 'cancel'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,progress,handover,closed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_analytic_lines" type="object" class="oe_stat_button" icon="fa-money"
+                                invisible="not analytic_account_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value"><field name="actual_cost" widget="monetary" nolabel="1"/></span>
+                                <span class="o_stat_text">Actual Cost</span>
+                            </div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Cancelled" bg_color="text-bg-danger" invisible="state != 'cancel'"/>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                        <field name="title" placeholder="e.g. Villa Compound Phase 2 - Structural Works"/>
+                    </div>
+                    <group>
+                        <group name="main">
+                            <field name="contract_type" invisible="1"/>
+                            <field name="partner_id" readonly="state not in ('draft', 'progress')"/>
+                            <field name="project_id"/>
+                            <field name="user_id"/>
+                            <field name="analytic_account_id" groups="analytic.group_analytic_accounting"/>
+                        </group>
+                        <group name="dates">
+                            <field name="date_signed"/>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="handover_date" invisible="state in ('draft', 'progress')"/>
+                            <field name="dlp_end_date" invisible="not dlp_end_date"/>
+                            <field name="currency_id" groups="base.group_multi_currency" readonly="state != 'draft'"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Bill of Quantities" name="boq">
+                            <field name="boq_locked" invisible="1"/>
+                            <div class="alert alert-info mb-2" role="status" invisible="not boq_locked">
+                                The BOQ is locked. Use a variation order to change items, quantities or rates.
+                            </div>
+                            <field name="line_ids" widget="section_and_note_one2many" mode="list" readonly="boq_locked">
+                                <list editable="bottom">
+                                    <control>
+                                        <create name="add_line" string="Add an item"/>
+                                        <create name="add_section" string="Add a section" context="{'default_display_type': 'line_section'}"/>
+                                        <create name="add_note" string="Add a note" context="{'default_display_type': 'line_note'}"/>
+                                    </control>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="display_type" column_invisible="True"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="item_no" optional="show"/>
+                                    <field name="product_id" optional="hide"/>
+                                    <field name="name" widget="section_and_note_text"/>
+                                    <field name="uom_id" optional="show"/>
+                                    <field name="quantity"/>
+                                    <field name="price_unit"/>
+                                    <field name="cost_unit" optional="show" groups="dvz_contract.group_dvz_show_cost"/>
+                                    <field name="price_subtotal"/>
+                                    <field name="cost_subtotal" optional="hide" groups="dvz_contract.group_dvz_show_cost"/>
+                                    <field name="margin_subtotal" optional="hide" groups="dvz_contract.group_dvz_show_cost"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer" name="totals">
+                                <field name="amount_untaxed"/>
+                                <field name="cost_budget" groups="dvz_contract.group_dvz_show_cost"/>
+                                <field name="planned_margin" groups="dvz_contract.group_dvz_show_cost"/>
+                                <field name="planned_margin_percent" groups="dvz_contract.group_dvz_show_cost"/>
+                            </group>
+                        </page>
+                        <page string="Commercial Terms" name="terms">
+                            <group>
+                                <group string="Payment Terms">
+                                    <field name="retention_percent"/>
+                                    <field name="advance_percent"/>
+                                    <field name="advance_recovery_percent"/>
+                                </group>
+                                <group string="Other">
+                                    <field name="defects_months"/>
+                                    <field name="tax_ids" widget="many2many_tags"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Cost Control" name="cost_control" invisible="state == 'draft'">
+                            <group>
+                                <group string="Cost">
+                                    <field name="cost_budget"/>
+                                    <field name="committed_cost"/>
+                                    <field name="actual_cost"/>
+                                    <field name="forecast_cost"/>
+                                    <field name="budget_remaining"/>
+                                </group>
+                                <group string="Revenue">
+                                    <field name="amount_untaxed" string="Contract Value"/>
+                                    <field name="actual_revenue"/>
+                                </group>
+                            </group>
+                            <p class="text-muted">
+                                Actual cost and revenue come from analytic items posted on this contract's analytic account.
+                                Committed cost is the unbilled part of confirmed purchase orders on the same analytic account.
+                            </p>
+                        </page>
+                        <page string="Scope of Work" name="scope">
+                            <field name="scope"/>
+                        </page>
+                        <page string="Terms &amp; Notes" name="notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="dvz_contract_view_list" model="ir.ui.view">
+        <field name="name">dvz.contract.list</field>
+        <field name="model">dvz.contract</field>
+        <field name="arch" type="xml">
+            <list string="Contracts" decoration-muted="state in ('closed', 'cancel')" decoration-info="state == 'draft'">
+                <field name="name"/>
+                <field name="title" optional="show"/>
+                <field name="partner_id"/>
+                <field name="project_id" optional="show"/>
+                <field name="date_start" optional="show"/>
+                <field name="date_end" optional="show"/>
+                <field name="user_id" optional="hide" widget="many2one_avatar_user"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="amount_untaxed" sum="Total"/>
+                <field name="cost_budget" optional="hide" sum="Total" groups="dvz_contract.group_dvz_show_cost"/>
+                <field name="company_id" optional="hide" groups="base.group_multi_company"/>
+                <field name="state" widget="badge" decoration-success="state == 'progress'" decoration-warning="state == 'handover'" decoration-info="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dvz_contract_view_kanban" model="ir.ui.view">
+        <field name="name">dvz.contract.kanban</field>
+        <field name="model">dvz.contract</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile" default_group_by="state">
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex justify-content-between">
+                            <field name="name" class="fw-bold"/>
+                            <field name="amount_untaxed" widget="monetary"/>
+                        </div>
+                        <field name="title"/>
+                        <field name="partner_id" class="text-muted"/>
+                        <footer>
+                            <field name="date_end"/>
+                            <field name="user_id" widget="many2one_avatar_user" class="ms-auto"/>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="dvz_contract_view_pivot" model="ir.ui.view">
+        <field name="name">dvz.contract.pivot</field>
+        <field name="model">dvz.contract</field>
+        <field name="arch" type="xml">
+            <pivot string="Contracts">
+                <field name="partner_id" type="row"/>
+                <field name="state" type="col"/>
+                <field name="amount_untaxed" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="dvz_contract_view_graph" model="ir.ui.view">
+        <field name="name">dvz.contract.graph</field>
+        <field name="model">dvz.contract</field>
+        <field name="arch" type="xml">
+            <graph string="Contracts" type="bar">
+                <field name="partner_id"/>
+                <field name="amount_untaxed" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="dvz_contract_view_search" model="ir.ui.view">
+        <field name="name">dvz.contract.search</field>
+        <field name="model">dvz.contract</field>
+        <field name="arch" type="xml">
+            <search string="Contracts">
+                <field name="name"/>
+                <field name="title"/>
+                <field name="partner_id"/>
+                <field name="project_id"/>
+                <field name="user_id"/>
+                <filter name="my" string="My Contracts" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="progress" string="In Progress" domain="[('state', '=', 'progress')]"/>
+                <filter name="handover" string="Handed Over" domain="[('state', '=', 'handover')]"/>
+                <filter name="closed" string="Closed" domain="[('state', '=', 'closed')]"/>
+                <group>
+                    <filter name="group_partner" string="Client" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_project" string="Project" context="{'group_by': 'project_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dvz_contract" model="ir.actions.act_window">
+        <field name="name">Contracts</field>
+        <field name="res_model">dvz.contract</field>
+        <field name="view_mode">list,kanban,form,pivot,graph</field>
+        <field name="domain">[('contract_type', '=', 'client')]</field>
+        <field name="context">{'default_contract_type': 'client'}</field>
+        <field name="search_view_id" ref="dvz_contract_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first contract</p>
+            <p>Add the client, the project and the bill of quantities, then confirm the contract.</p>
+        </field>
+    </record>
+
+    <record id="action_dvz_contract_line" model="ir.actions.act_window">
+        <field name="name">BOQ Items</field>
+        <field name="res_model">dvz.contract.line</field>
+        <field name="view_mode">list</field>
+        <field name="domain">[('display_type', '=', False)]</field>
+    </record>
+</odoo>

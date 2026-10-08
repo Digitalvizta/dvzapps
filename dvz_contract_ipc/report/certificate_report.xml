@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_dvz_certificate" model="ir.actions.report">
+        <field name="name">Payment Certificate</field>
+        <field name="model">dvz.contract.certificate</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dvz_contract_ipc.report_dvz_certificate</field>
+        <field name="report_file">dvz_contract_ipc.report_dvz_certificate</field>
+        <field name="print_report_name">'Payment Certificate - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_dvz_contract_certificate"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_dvz_certificate_document">
+        <t t-call="web.external_layout">
+            <t t-set="bi" t-value="o.company_id.dvz_ipc_bilingual"/>
+            <div class="page">
+                <div class="row">
+                    <div class="col-6"><h3>Interim Payment Certificate</h3></div>
+                    <div class="col-6 text-end" t-if="bi" dir="rtl"><h3>شهادة دفع مرحلية</h3></div>
+                </div>
+                <table class="table table-sm table-borderless mb-3">
+                    <tr>
+                        <td><strong>Certificate No.</strong> <span t-if="bi" dir="rtl">رقم الشهادة</span></td>
+                        <td><span t-field="o.name"/> (<span t-field="o.number"/>)</td>
+                        <td><strong>Date</strong> <span t-if="bi" dir="rtl">التاريخ</span></td>
+                        <td><span t-field="o.date"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Contract</strong> <span t-if="bi" dir="rtl">العقد</span></td>
+                        <td><span t-field="o.contract_id.name"/> <span t-field="o.contract_id.title"/></td>
+                        <td><strong>Period</strong> <span t-if="bi" dir="rtl">الفترة</span></td>
+                        <td><span t-field="o.period_start"/> - <span t-field="o.period_end"/></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Client</strong> <span t-if="bi" dir="rtl">العميل</span></td>
+                        <td><span t-field="o.partner_id"/></td>
+                        <td><strong>Project</strong> <span t-if="bi" dir="rtl">المشروع</span></td>
+                        <td><span t-field="o.project_id"/></td>
+                    </tr>
+                </table>
+
+                <table class="table table-sm o_main_table" style="font-size: 11px;">
+                    <thead>
+                        <tr>
+                            <th>Item<br t-if="bi"/><span t-if="bi">البند</span></th>
+                            <th>Description<br t-if="bi"/><span t-if="bi">الوصف</span></th>
+                            <th>Unit<br t-if="bi"/><span t-if="bi">الوحدة</span></th>
+                            <th class="text-end">BOQ Qty<br t-if="bi"/><span t-if="bi">كمية العقد</span></th>
+                            <th class="text-end">Rate<br t-if="bi"/><span t-if="bi">السعر</span></th>
+                            <th class="text-end">Previous<br t-if="bi"/><span t-if="bi">السابق</span></th>
+                            <th class="text-end">This Period<br t-if="bi"/><span t-if="bi">الحالي</span></th>
+                            <th class="text-end">Cumulative<br t-if="bi"/><span t-if="bi">التراكمي</span></th>
+                            <th class="text-end">%</th>
+                            <th class="text-end">Cumulative Amount<br t-if="bi"/><span t-if="bi">المبلغ التراكمي</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="o.line_ids" t-as="line">
+                            <tr t-if="line.display_type == 'line_section'" class="bg-200 fw-bold">
+                                <td colspan="10"><span t-field="line.name"/></td>
+                            </tr>
+                            <tr t-elif="line.display_type == 'line_note'" class="fst-italic">
+                                <td colspan="10"><span t-field="line.name"/></td>
+                            </tr>
+                            <tr t-else="">
+                                <td><span t-field="line.item_no"/></td>
+                                <td><span t-field="line.name"/></td>
+                                <td><span t-field="line.uom_id"/></td>
+                                <td class="text-end"><span t-field="line.qty_contract"/></td>
+                                <td class="text-end"><span t-field="line.price_unit"/></td>
+                                <td class="text-end"><span t-field="line.qty_previous"/></td>
+                                <td class="text-end"><span t-field="line.qty_current"/></td>
+                                <td class="text-end"><span t-field="line.qty_cumulative"/></td>
+                                <td class="text-end"><span t-esc="'%.1f' % line.percent_cumulative"/></td>
+                                <td class="text-end"><span t-field="line.amount_cumulative"/></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+
+                <div class="row justify-content-end">
+                    <div class="col-7">
+                        <table class="table table-sm">
+                            <tr><td>Cumulative work done <span t-if="bi" dir="rtl">/ الأعمال المنجزة تراكمياً</span></td><td class="text-end"><span t-field="o.amount_cumulative"/></td></tr>
+                            <tr><td>Less previously certified <span t-if="bi" dir="rtl">/ ناقصاً المعتمد سابقاً</span></td><td class="text-end"><span t-field="o.amount_previous"/></td></tr>
+                            <tr class="fw-bold"><td>Work done this period <span t-if="bi" dir="rtl">/ أعمال الفترة الحالية</span></td><td class="text-end"><span t-field="o.amount_current"/></td></tr>
+                            <tr><td>Less retention (<span t-esc="'%.2f' % o.retention_percent"/>%) <span t-if="bi" dir="rtl">/ ناقصاً المحتجزات</span></td><td class="text-end">(<span t-field="o.retention_amount"/>)</td></tr>
+                            <tr><td>Less advance recovery <span t-if="bi" dir="rtl">/ ناقصاً استرداد الدفعة المقدمة</span></td><td class="text-end">(<span t-field="o.advance_recovery_amount"/>)</td></tr>
+                            <tr t-if="o.deduction_amount"><td>Less other deductions <span t-if="bi" dir="rtl">/ ناقصاً خصومات أخرى</span></td><td class="text-end">(<span t-field="o.deduction_amount"/>)</td></tr>
+                            <tr class="fw-bold border-top"><td>Net amount due (excl. VAT) <span t-if="bi" dir="rtl">/ صافي المبلغ المستحق (غير شامل الضريبة)</span></td><td class="text-end"><span t-field="o.amount_due"/></td></tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div t-if="o.deduction_ids" class="mt-2">
+                    <strong>Deductions <span t-if="bi" dir="rtl">/ الخصومات</span></strong>
+                    <ul>
+                        <li t-foreach="o.deduction_ids" t-as="d"><span t-field="d.name"/>: <span t-field="d.amount"/> <span t-if="d.reason">(<span t-field="d.reason"/>)</span></li>
+                    </ul>
+                </div>
+
+                <div class="row mt-5 text-center">
+                    <div class="col-4">
+                        <p>Prepared by (Contractor)<br t-if="bi"/><span t-if="bi">إعداد (المقاول)</span></p>
+                        <p class="mt-4">______________________</p>
+                    </div>
+                    <div class="col-4">
+                        <p>Checked by (Consultant)<br t-if="bi"/><span t-if="bi">مراجعة (الاستشاري)</span></p>
+                        <p t-if="o.consultant"><span t-field="o.consultant"/></p>
+                        <p class="mt-4">______________________</p>
+                    </div>
+                    <div class="col-4">
+                        <p>Approved by (Client)<br t-if="bi"/><span t-if="bi">اعتماد (العميل)</span></p>
+                        <p class="mt-4">______________________</p>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_dvz_certificate">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="dvz_contract_ipc.report_dvz_certificate_document"/>
+            </t>
+        </t>
+    </template>
+</odoo>

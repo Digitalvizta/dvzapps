@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.dvz_contract</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="60"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Contracting" string="Contracting" name="dvz_contract" groups="dvz_contract.group_dvz_contract_manager">
+                    <block title="Contract Defaults" name="dvz_contract_defaults">
+                        <setting id="dvz_retention" string="Default retention %" help="Percentage withheld from each certificate">
+                            <field name="dvz_retention_percent"/>
+                        </setting>
+                        <setting id="dvz_advance" string="Default advance % and recovery %" help="Proposed on new contracts">
+                            <div class="content-group">
+                                <div class="row mt8">
+                                    <label for="dvz_advance_percent" string="Advance %" class="col-lg-5 o_light_label"/>
+                                    <field name="dvz_advance_percent"/>
+                                </div>
+                                <div class="row">
+                                    <label for="dvz_advance_recovery_percent" string="Recovery %" class="col-lg-5 o_light_label"/>
+                                    <field name="dvz_advance_recovery_percent"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting id="dvz_defects" string="Defects liability period" help="Months after handover">
+                            <field name="dvz_defects_months"/>
+                        </setting>
+                        <setting id="dvz_taxes" string="Default taxes" help="For client contracts and subcontracts">
+                            <div class="content-group">
+                                <div class="row mt8">
+                                    <label for="dvz_sale_tax_ids" string="Client contracts" class="col-lg-5 o_light_label"/>
+                                    <field name="dvz_sale_tax_ids" widget="many2many_tags"/>
+                                </div>
+                                <div class="row">
+                                    <label for="dvz_purchase_tax_ids" string="Subcontracts" class="col-lg-5 o_light_label"/>
+                                    <field name="dvz_purchase_tax_ids" widget="many2many_tags"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="BOQ and Cost Control" name="dvz_contract_boq">
+                        <setting id="dvz_lock_boq" help="After confirmation, changes follow the variation process">
+                            <field name="dvz_lock_boq"/>
+                        </setting>
+                        <setting id="dvz_show_cost" help="Show estimated unit cost, cost budget and margin columns">
+                            <field name="group_dvz_show_cost"/>
+                        </setting>
+                        <setting id="dvz_analytic" help="Each confirmed contract gets its own analytic account, or reuses the project's">
+                            <field name="dvz_analytic_per_contract"/>
+                            <div class="content-group" invisible="not dvz_analytic_per_contract">
+                                <div class="row mt8">
+                                    <label for="dvz_analytic_plan_id" string="Analytic plan" class="col-lg-5 o_light_label"/>
+                                    <field name="dvz_analytic_plan_id"/>
+                                </div>
+                            </div>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_dvz_contract_config" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'dvz_contract', 'bin_size': False}</field>
+    </record>
+</odoo>

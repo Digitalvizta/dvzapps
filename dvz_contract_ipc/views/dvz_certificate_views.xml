@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_certificate_view_form" model="ir.ui.view">
+        <field name="name">dvz.contract.certificate.form</field>
+        <field name="model">dvz.contract.certificate</field>
+        <field name="arch" type="xml">
+            <form string="Payment Certificate">
+                <header>
+                    <button name="action_submit" string="Submit" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_approve" string="Approve" type="object" class="oe_highlight" invisible="state != 'submitted'"
+                            groups="dvz_contract.group_dvz_contract_manager"/>
+                    <button name="action_create_invoice" string="Create Invoice" type="object" class="oe_highlight" invisible="state != 'approved'"/>
+                    <button name="action_reload_lines" string="Reload BOQ" type="object" invisible="state != 'draft'"
+                            help="Add new BOQ items (for example from approved variations) and refresh previous quantities."/>
+                    <button name="action_draft" string="Back to Draft" type="object" invisible="state not in ('submitted', 'approved', 'cancel')"/>
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state in ('cancel',)"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,invoiced"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoice" type="object" class="oe_stat_button" icon="fa-file-text-o" invisible="not invoice_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Invoice</span>
+                                <span class="o_stat_value"><field name="invoice_state" nolabel="1"/></span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="contract_type" invisible="1"/>
+                            <field name="contract_id" readonly="state != 'draft' or line_ids"/>
+                            <field name="partner_id"/>
+                            <field name="project_id"/>
+                            <field name="number"/>
+                            <field name="consultant" readonly="state not in ('draft', 'submitted')"/>
+                        </group>
+                        <group>
+                            <field name="date" readonly="state not in ('draft', 'submitted')"/>
+                            <label for="period_start" string="Period"/>
+                            <div class="o_row">
+                                <field name="period_start" readonly="state != 'draft'"/> - <field name="period_end" readonly="state != 'draft'"/>
+                            </div>
+                            <field name="entry_mode" invisible="1"/>
+                            <field name="progress_percent" string="Cumulative progress (%)"/>
+                            <field name="approved_by_id" invisible="not approved_by_id"/>
+                            <field name="approved_date" invisible="not approved_date"/>
+                            <field name="invoice_id" invisible="not invoice_id"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Progress" name="progress">
+                            <field name="line_ids" readonly="state != 'draft'" widget="section_and_note_one2many" mode="list">
+                                <list editable="bottom" create="0" delete="0">
+                                    <field name="sequence" column_invisible="True"/>
+                                    <field name="display_type" column_invisible="True"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="item_no" readonly="1"/>
+                                    <field name="name" widget="section_and_note_text" readonly="1"/>
+                                    <field name="uom_id" readonly="1" optional="show"/>
+                                    <field name="qty_contract" readonly="1"/>
+                                    <field name="price_unit" readonly="1" optional="show"/>
+                                    <field name="qty_previous" readonly="1" optional="show"/>
+                                    <field name="qty_current" readonly="parent.entry_mode == 'percent'"/>
+                                    <field name="qty_cumulative" optional="show"/>
+                                    <field name="percent_cumulative" readonly="parent.entry_mode != 'percent'"/>
+                                    <field name="amount_previous" optional="hide"/>
+                                    <field name="amount_current"/>
+                                    <field name="amount_cumulative" optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Other Deductions" name="deductions">
+                            <field name="deduction_ids" readonly="state != 'draft'">
+                                <list editable="bottom">
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="deduction_type"/>
+                                    <field name="name"/>
+                                    <field name="reason"/>
+                                    <field name="account_id" optional="hide"/>
+                                    <field name="amount" sum="Total"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                    <group class="oe_subtotal_footer" name="summary">
+                        <field name="amount_previous"/>
+                        <field name="amount_current"/>
+                        <field name="amount_cumulative"/>
+                        <label for="retention_amount"/>
+                        <div class="o_row">
+                            <span>(<field name="retention_percent" class="oe_inline" nolabel="1"/> %)</span>
+                            <field name="retention_amount" nolabel="1"/>
+                        </div>
+                        <label for="advance_recovery_amount"/>
+                        <div class="o_row">
+                            <span>(<field name="advance_recovery_percent" class="oe_inline" nolabel="1"/> %)</span>
+                            <field name="advance_recovery_amount" nolabel="1"/>
+                        </div>
+                        <field name="deduction_amount"/>
+                        <field name="amount_due" class="oe_subtotal_footer_separator"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="dvz_certificate_view_list" model="ir.ui.view">
+        <field name="name">dvz.contract.certificate.list</field>
+        <field name="model">dvz.contract.certificate</field>
+        <field name="arch" type="xml">
+            <list string="Payment Certificates" decoration-muted="state == 'cancel'" decoration-info="state == 'draft'">
+                <field name="name"/>
+                <field name="contract_id"/>
+                <field name="partner_id"/>
+                <field name="number" optional="show"/>
+                <field name="date"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="amount_current" sum="Total"/>
+                <field name="retention_amount" sum="Total" optional="show"/>
+                <field name="advance_recovery_amount" sum="Total" optional="show"/>
+                <field name="amount_due" sum="Total"/>
+                <field name="progress_percent" optional="hide"/>
+                <field name="state" widget="badge" decoration-success="state == 'invoiced'" decoration-warning="state == 'submitted'" decoration-info="state in ('draft', 'approved')"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dvz_certificate_view_pivot" model="ir.ui.view">
+        <field name="name">dvz.contract.certificate.pivot</field>
+        <field name="model">dvz.contract.certificate</field>
+        <field name="arch" type="xml">
+            <pivot string="Billing Analysis">
+                <field name="contract_id" type="row"/>
+                <field name="date" interval="month" type="col"/>
+                <field name="amount_current" type="measure"/>
+                <field name="retention_amount" type="measure"/>
+                <field name="amount_due" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="dvz_certificate_view_graph" model="ir.ui.view">
+        <field name="name">dvz.contract.certificate.graph</field>
+        <field name="model">dvz.contract.certificate</field>
+        <field name="arch" type="xml">
+            <graph string="Certified per Month" type="bar">
+                <field name="date" interval="month"/>
+                <field name="amount_current" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="dvz_certificate_view_search" model="ir.ui.view">
+        <field name="name">dvz.contract.certificate.search</field>
+        <field name="model">dvz.contract.certificate</field>
+        <field name="arch" type="xml">
+            <search string="Payment Certificates">
+                <field name="name"/>
+                <field name="contract_id"/>
+                <field name="partner_id"/>
+                <filter name="to_approve" string="To Approve" domain="[('state', '=', 'submitted')]"/>
+                <filter name="to_invoice" string="To Invoice" domain="[('state', '=', 'approved')]"/>
+                <filter name="invoiced" string="Invoiced" domain="[('state', '=', 'invoiced')]"/>
+                <filter name="not_cancelled" string="Not Cancelled" domain="[('state', '!=', 'cancel')]"/>
+                <separator/>
+                <filter name="date" string="Date" date="date"/>
+                <group>
+                    <filter name="group_contract" string="Contract" context="{'group_by': 'contract_id'}"/>
+                    <filter name="group_partner" string="Partner" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_month" string="Month" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dvz_certificate" model="ir.actions.act_window">
+        <field name="name">Payment Certificates</field>
+        <field name="res_model">dvz.contract.certificate</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="domain">[('contract_type', '=', 'client')]</field>
+        <field name="search_view_id" ref="dvz_certificate_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No payment certificates yet</p>
+            <p>Open a contract in progress and click <b>New Certificate</b>.</p>
+        </field>
+    </record>
+
+    <record id="action_dvz_billing_analysis" model="ir.actions.act_window">
+        <field name="name">Billing Analysis</field>
+        <field name="res_model">dvz.contract.certificate</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="domain">[('state', 'in', ('approved', 'invoiced'))]</field>
+        <field name="search_view_id" ref="dvz_certificate_view_search"/>
+    </record>
+</odoo>

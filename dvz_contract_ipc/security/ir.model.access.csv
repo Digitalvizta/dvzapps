@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dvz_cert_user,certificate user,model_dvz_contract_certificate,dvz_contract.group_dvz_contract_user,1,1,1,1
+access_dvz_cert_line_user,certificate line user,model_dvz_contract_certificate_line,dvz_contract.group_dvz_contract_user,1,1,1,1
+access_dvz_cert_ded_user,certificate deduction user,model_dvz_contract_certificate_deduction,dvz_contract.group_dvz_contract_user,1,1,1,1
+access_dvz_cert_account,certificate accountant,model_dvz_contract_certificate,account.group_account_invoice,1,0,0,0
+access_dvz_cert_line_account,certificate line accountant,model_dvz_contract_certificate_line,account.group_account_invoice,1,0,0,0
+access_dvz_cert_ded_account,certificate deduction accountant,model_dvz_contract_certificate_deduction,account.group_account_invoice,1,0,0,0

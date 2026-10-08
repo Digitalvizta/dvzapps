@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_dvz_retention_release" name="Retention Releases" parent="dvz_contract.menu_dvz_billing"
+              action="action_dvz_retention_release" sequence="30"/>
+    <menuitem id="menu_dvz_bank_guarantee" name="Bank Guarantees" parent="dvz_contract.menu_dvz_contracts"
+              action="action_dvz_bank_guarantee" sequence="40"/>
+    <menuitem id="menu_dvz_retention_ledger" name="Retention Ledger" parent="dvz_contract.menu_dvz_reporting"
+              action="action_dvz_retention_ledger" sequence="30"/>
+</odoo>

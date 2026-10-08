@@ -1,0 +1,26 @@
+{
+    'name': 'Variation Orders for Contractors',
+    'summary': 'Change orders with approval that add or change BOQ items and update the contract value.',
+    'description': 'Record site instructions and design changes, add new BOQ items or change quantities and rates, '
+                   'get approval and update the contract value with auditable variation lines.',
+    'version': '19.0.1.0.0',
+    'category': 'Services/Contracting',
+    'author': 'DigitalVizta',
+    'website': 'https://digitalvizta.net',
+    'support': 'info@digitalvizta.net',
+    'license': 'OPL-1',
+    'depends': ['dvz_contract'],
+    'data': [
+        'security/security.xml',
+        'security/ir.model.access.csv',
+        'data/sequence.xml',
+        'views/dvz_variation_views.xml',
+        'views/dvz_contract_views.xml',
+        'views/res_config_settings_views.xml',
+        'views/menus.xml',
+        'report/variation_report.xml',
+    ],
+    'installable': True,
+    'price': 99.0,
+    'currency': 'USD',
+}

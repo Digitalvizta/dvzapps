@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_ipc" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.dvz_contract_ipc</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="dvz_contract.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='dvz_contract_boq']" position="after">
+                <block title="Progress Billing (IPC)" name="dvz_ipc">
+                    <setting id="dvz_ipc_approval" help="Certificates are submitted and approved before invoicing">
+                        <field name="dvz_ipc_approval"/>
+                    </setting>
+                    <setting id="dvz_ipc_entry" string="Progress entry" help="Quantity done this period, or cumulative % complete">
+                        <field name="dvz_ipc_entry_mode" widget="radio"/>
+                    </setting>
+                    <setting id="dvz_ipc_layout" string="Invoice layout" help="One summary line per certificate, or one line per BOQ item">
+                        <field name="dvz_ipc_invoice_layout" widget="radio"/>
+                    </setting>
+                    <setting id="dvz_retention_method" string="Retention method"
+                             help="Deduct on the invoice (tax-free line to a retention account) or invoice the full amount and track retention only (useful for e-invoicing such as ZATCA)">
+                        <field name="dvz_retention_method" widget="radio"/>
+                    </setting>
+                    <setting id="dvz_ipc_accounts" string="Journal, product and accounts" help="Where certificate invoices are posted">
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label for="dvz_ipc_journal_id" string="Journal" class="col-lg-5 o_light_label"/>
+                                <field name="dvz_ipc_journal_id"/>
+                            </div>
+                            <div class="row">
+                                <label for="dvz_ipc_product_id" string="Work done product" class="col-lg-5 o_light_label"/>
+                                <field name="dvz_ipc_product_id"/>
+                            </div>
+                            <div class="row">
+                                <label for="dvz_ipc_revenue_account_id" string="Revenue account" class="col-lg-5 o_light_label"/>
+                                <field name="dvz_ipc_revenue_account_id"/>
+                            </div>
+                            <div class="row">
+                                <label for="dvz_retention_account_id" string="Retention account" class="col-lg-5 o_light_label"/>
+                                <field name="dvz_retention_account_id"/>
+                            </div>
+                            <div class="row">
+                                <label for="dvz_advance_account_id" string="Advance account" class="col-lg-5 o_light_label"/>
+                                <field name="dvz_advance_account_id"/>
+                            </div>
+                            <div class="row">
+                                <label for="dvz_deduction_account_id" string="Deductions account" class="col-lg-5 o_light_label"/>
+                                <field name="dvz_deduction_account_id"/>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting id="dvz_ipc_taxes" string="Taxes on advances" help="Apply contract taxes on the advance invoice and on advance recovery">
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label for="dvz_advance_tax" string="On advance invoice" class="col-lg-5 o_light_label"/>
+                                <field name="dvz_advance_tax"/>
+                            </div>
+                            <div class="row">
+                                <label for="dvz_recovery_tax" string="On recovery" class="col-lg-5 o_light_label"/>
+                                <field name="dvz_recovery_tax"/>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting id="dvz_allow_overrun" help="Allow cumulative quantities above the BOQ quantity">
+                        <field name="dvz_allow_overrun"/>
+                    </setting>
+                    <setting id="dvz_ipc_auto_post" help="Post certificate invoices as soon as they are created">
+                        <field name="dvz_ipc_auto_post"/>
+                    </setting>
+                    <setting id="dvz_ipc_bilingual" help="Print certificates with English and Arabic labels">
+                        <field name="dvz_ipc_bilingual"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

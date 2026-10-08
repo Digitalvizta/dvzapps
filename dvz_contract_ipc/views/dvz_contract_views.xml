@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_contract_view_form_ipc" model="ir.ui.view">
+        <field name="name">dvz.contract.form.ipc</field>
+        <field name="model">dvz.contract</field>
+        <field name="inherit_id" ref="dvz_contract.dvz_contract_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_handover']" position="before">
+                <button name="action_new_certificate" string="New Certificate" type="object" class="oe_highlight"
+                        invisible="state not in ('progress', 'handover')"/>
+                <button name="action_create_advance_invoice" string="Advance Invoice" type="object"
+                        invisible="state != 'progress' or not advance_percent or advance_amount"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_certificates" type="object" class="oe_stat_button" icon="fa-list-ol">
+                    <field name="certificate_count" widget="statinfo" string="Certificates"/>
+                </button>
+                <button name="action_view_invoices" type="object" class="oe_stat_button" icon="fa-file-text-o"
+                        invisible="state == 'draft'">
+                    <div class="o_stat_info">
+                        <span class="o_stat_value"><field name="certified_percent" nolabel="1" digits="[16, 1]"/> %</span>
+                        <span class="o_stat_text">Certified</span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//page[@name='terms']" position="after">
+                <page string="Billing" name="billing" invisible="state == 'draft'">
+                    <group>
+                        <group string="Progress">
+                            <field name="amount_untaxed" string="Contract Value"/>
+                            <field name="certified_amount"/>
+                            <field name="amount_to_certify"/>
+                            <field name="retention_held"/>
+                        </group>
+                        <group string="Advance Payment">
+                            <field name="advance_amount"/>
+                            <field name="advance_recovered"/>
+                            <field name="advance_balance"/>
+                        </group>
+                    </group>
+                    <field name="certificate_ids" readonly="1">
+                        <list>
+                            <field name="name"/>
+                            <field name="number"/>
+                            <field name="date"/>
+                            <field name="currency_id" column_invisible="True"/>
+                            <field name="amount_current" sum="Total"/>
+                            <field name="retention_amount" sum="Total"/>
+                            <field name="advance_recovery_amount" sum="Total"/>
+                            <field name="amount_due" sum="Total"/>
+                            <field name="state" widget="badge"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="dvz_contract_view_list_ipc" model="ir.ui.view">
+        <field name="name">dvz.contract.list.ipc</field>
+        <field name="model">dvz.contract</field>
+        <field name="inherit_id" ref="dvz_contract.dvz_contract_view_list"/>
+        <field name="arch" type="xml">
+            <field name="amount_untaxed" position="after">
+                <field name="certified_percent" string="Certified %" optional="show"/>
+            </field>
+        </field>
+    </record>
+</odoo>

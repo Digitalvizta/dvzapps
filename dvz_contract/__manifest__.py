@@ -1,0 +1,26 @@
+{
+    'name': 'Contracts & BOQ for Contractors',
+    'summary': 'Construction contracts, bill of quantities (BOQ), cost budget, margin and live cost control.',
+    'description': 'Free core of the DigitalVizta Contracting Suite: contracts with commercial terms, BOQ, '
+                   'cost budget and planned margin, live cost control and a contract summary PDF.',
+    'version': '19.0.1.0.0',
+    'category': 'Services/Contracting',
+    'author': 'DigitalVizta',
+    'website': 'https://digitalvizta.net',
+    'support': 'info@digitalvizta.net',
+    'license': 'LGPL-3',
+    'depends': ['account', 'project', 'analytic', 'uom', 'mail'],
+    'data': [
+        'security/security.xml',
+        'security/ir.model.access.csv',
+        'data/sequence.xml',
+        'views/dvz_contract_views.xml',
+        'views/res_config_settings_views.xml',
+        'views/menus.xml',
+        'report/contract_report.xml',
+    ],
+    'application': True,
+    'installable': True,
+    'price': 0,
+    'currency': 'USD',
+}

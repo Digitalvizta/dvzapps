@@ -1,0 +1,26 @@
+{
+    'name': 'Progress Billing (IPC) for Contractors',
+    'summary': 'Interim payment certificates from the BOQ: retention, advance recovery, deductions and invoices.',
+    'description': 'Create interim payment certificates (IPC) from the contract BOQ, with previous, current and '
+                   'cumulative amounts, retention, advance recovery and deductions, then invoice in one click.',
+    'version': '19.0.1.0.0',
+    'category': 'Services/Contracting',
+    'author': 'DigitalVizta',
+    'website': 'https://digitalvizta.net',
+    'support': 'info@digitalvizta.net',
+    'license': 'OPL-1',
+    'depends': ['dvz_contract'],
+    'data': [
+        'security/security.xml',
+        'security/ir.model.access.csv',
+        'data/sequence.xml',
+        'views/dvz_certificate_views.xml',
+        'views/dvz_contract_views.xml',
+        'views/res_config_settings_views.xml',
+        'views/menus.xml',
+        'report/certificate_report.xml',
+    ],
+    'installable': True,
+    'price': 149.0,
+    'currency': 'USD',
+}

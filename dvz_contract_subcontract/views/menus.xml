@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_dvz_subcontracts" name="Subcontractors" parent="dvz_contract.menu_dvz_contracting_root" sequence="30"/>
+    <menuitem id="menu_dvz_subcontract" name="Subcontracts" parent="menu_dvz_subcontracts"
+              action="action_dvz_subcontract" sequence="10"/>
+    <menuitem id="menu_dvz_subcontract_certificate" name="Subcontractor Certificates" parent="menu_dvz_subcontracts"
+              action="action_dvz_subcontract_certificate" sequence="20"/>
+</odoo>

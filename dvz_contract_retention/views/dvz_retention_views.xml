@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_retention_release_view_form" model="ir.ui.view">
+        <field name="name">dvz.retention.release.form</field>
+        <field name="model">dvz.retention.release</field>
+        <field name="arch" type="xml">
+            <form string="Retention Release">
+                <header>
+                    <button name="action_release" string="Release" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state == 'cancel'"/>
+                    <button name="action_draft" string="Reset to Draft" type="object" invisible="state != 'cancel'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,released"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_invoice" type="object" class="oe_stat_button" icon="fa-file-text-o" invisible="not invoice_id"
+                                string="Invoice"/>
+                    </div>
+                    <div class="oe_title"><h1><field name="name" readonly="1"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="contract_type" invisible="1"/>
+                            <field name="contract_id" readonly="state != 'draft'"/>
+                            <field name="partner_id"/>
+                            <field name="release_type" readonly="state != 'draft'"/>
+                            <field name="date" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="retention_held"/>
+                            <field name="method" widget="radio" readonly="state != 'draft'"/>
+                            <field name="percent" invisible="method != 'percent'" readonly="state != 'draft'"/>
+                            <field name="amount_input" invisible="method != 'amount'" readonly="state != 'draft'"/>
+                            <field name="amount"/>
+                            <field name="invoice_id" invisible="not invoice_id"/>
+                        </group>
+                    </group>
+                    <field name="notes" placeholder="Notes..."/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="dvz_retention_release_view_list" model="ir.ui.view">
+        <field name="name">dvz.retention.release.list</field>
+        <field name="model">dvz.retention.release</field>
+        <field name="arch" type="xml">
+            <list string="Retention Releases" decoration-muted="state == 'cancel'" decoration-info="state == 'draft'">
+                <field name="name"/>
+                <field name="contract_id"/>
+                <field name="partner_id"/>
+                <field name="date"/>
+                <field name="release_type"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="amount" sum="Total"/>
+                <field name="state" widget="badge" decoration-success="state == 'released'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_dvz_retention_release" model="ir.actions.act_window">
+        <field name="name">Retention Releases</field>
+        <field name="res_model">dvz.retention.release</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('contract_type', '=', 'client')]</field>
+    </record>
+
+    <!-- Retention ledger: one row per contract -->
+    <record id="dvz_contract_view_list_retention_ledger" model="ir.ui.view">
+        <field name="name">dvz.contract.list.retention.ledger</field>
+        <field name="model">dvz.contract</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <list string="Retention Ledger" create="0">
+                <field name="name"/>
+                <field name="title" optional="show"/>
+                <field name="partner_id"/>
+                <field name="state" widget="badge"/>
+                <field name="dlp_end_date"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="certified_amount"/>
+                <field name="retention_held"/>
+                <field name="retention_released"/>
+                <field name="retention_balance"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_dvz_retention_ledger" model="ir.actions.act_window">
+        <field name="name">Retention Ledger</field>
+        <field name="res_model">dvz.contract</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('state', 'in', ('progress', 'handover', 'closed')), ('contract_type', '=', 'client')]</field>
+        <field name="view_ids" eval="[(5, 0, 0), (0, 0, {'view_mode': 'list', 'view_id': ref('dvz_contract_view_list_retention_ledger')})]"/>
+    </record>
+</odoo>

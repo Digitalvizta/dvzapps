@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_dvz_variation" model="ir.actions.report">
+        <field name="name">Variation Order</field>
+        <field name="model">dvz.contract.variation</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dvz_contract_variation.report_dvz_variation</field>
+        <field name="report_file">dvz_contract_variation.report_dvz_variation</field>
+        <field name="print_report_name">'Variation Order - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_dvz_contract_variation"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_dvz_variation_document">
+        <t t-call="web.external_layout">
+            <div class="page">
+                <h2>Variation Order <span t-field="o.name"/></h2>
+                <p><strong t-field="o.title"/></p>
+                <table class="table table-sm table-borderless">
+                    <tr><td><strong>Contract</strong></td><td><span t-field="o.contract_id.name"/> <span t-field="o.contract_id.title"/></td>
+                        <td><strong>Date</strong></td><td><span t-field="o.date"/></td></tr>
+                    <tr><td><strong>Client</strong></td><td><span t-field="o.partner_id"/></td>
+                        <td><strong>Reason</strong></td><td><span t-field="o.reason"/></td></tr>
+                    <tr><td><strong>Instruction ref.</strong></td><td><span t-field="o.instruction_ref"/></td>
+                        <td><strong>Time extension</strong></td><td><span t-field="o.time_extension_days"/> days</td></tr>
+                </table>
+                <div t-if="o.description" t-field="o.description" class="mb-3"/>
+                <table class="table table-sm o_main_table">
+                    <thead>
+                        <tr><th>Change</th><th>Item</th><th>Description</th><th>Unit</th>
+                            <th class="text-end">Qty (+/-)</th><th class="text-end">Rate</th><th class="text-end">Amount</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="o.line_ids" t-as="line">
+                            <td><span t-field="line.change_type"/></td>
+                            <td><span t-field="line.item_no"/></td>
+                            <td><span t-field="line.name"/></td>
+                            <td><span t-field="line.uom_id"/></td>
+                            <td class="text-end"><span t-field="line.quantity"/></td>
+                            <td class="text-end"><span t-field="line.price_unit"/></td>
+                            <td class="text-end"><span t-field="line.price_subtotal"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="row justify-content-end">
+                    <div class="col-5">
+                        <table class="table table-sm">
+                            <tr><td>Contract value before this variation</td><td class="text-end"><span t-esc="o.contract_id.amount_untaxed - (o.amount_total if o.state == 'applied' else 0.0)" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></td></tr>
+                            <tr class="fw-bold"><td>This variation</td><td class="text-end"><span t-field="o.amount_total"/></td></tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="row mt-5 text-center">
+                    <div class="col-4"><p>Contractor</p><p class="mt-4">______________________</p></div>
+                    <div class="col-4"><p>Consultant</p><p class="mt-4">______________________</p></div>
+                    <div class="col-4"><p>Client</p><p class="mt-4">______________________</p></div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_dvz_variation">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="dvz_contract_variation.report_dvz_variation_document"/>
+            </t>
+        </t>
+    </template>
+</odoo>

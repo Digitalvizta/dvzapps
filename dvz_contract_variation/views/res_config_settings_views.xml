@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_variation" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.dvz_contract_variation</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="dvz_contract.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='dvz_contract_boq']" position="after">
+                <block title="Variation Orders" name="dvz_variation">
+                    <setting id="dvz_variation_approval" help="Variations are submitted and approved before they change the BOQ">
+                        <field name="dvz_variation_approval"/>
+                    </setting>
+                    <setting id="dvz_variation_auto_apply" help="Add the approved changes to the BOQ automatically">
+                        <field name="dvz_variation_auto_apply"/>
+                    </setting>
+                    <setting id="dvz_variation_allow_omission" help="Allow negative quantities and values">
+                        <field name="dvz_variation_allow_omission"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

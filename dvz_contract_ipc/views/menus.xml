@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_dvz_certificate" name="Payment Certificates" parent="dvz_contract.menu_dvz_billing"
+              action="action_dvz_certificate" sequence="10"/>
+    <menuitem id="menu_dvz_billing_analysis" name="Billing Analysis" parent="dvz_contract.menu_dvz_reporting"
+              action="action_dvz_billing_analysis" sequence="20"/>
+</odoo>

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_variation_view_form" model="ir.ui.view">
+        <field name="name">dvz.contract.variation.form</field>
+        <field name="model">dvz.contract.variation</field>
+        <field name="arch" type="xml">
+            <form string="Variation Order">
+                <header>
+                    <button name="action_submit" string="Submit" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_approve" string="Approve" type="object" class="oe_highlight" invisible="state != 'submitted'"
+                            groups="dvz_contract.group_dvz_contract_manager"/>
+                    <button name="action_apply" string="Apply to BOQ" type="object" class="oe_highlight" invisible="state != 'approved'"/>
+                    <button name="action_reject" string="Reject" type="object" invisible="state not in ('draft', 'submitted', 'approved')"/>
+                    <button name="action_draft" string="Back to Draft" type="object" invisible="state not in ('submitted', 'approved', 'rejected')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,applied"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                        <field name="title" placeholder="e.g. Additional boundary wall on east side" readonly="state not in ('draft', 'submitted')"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="contract_id" readonly="state != 'draft'"/>
+                            <field name="partner_id"/>
+                            <field name="reason" readonly="state not in ('draft', 'submitted')"/>
+                            <field name="instruction_ref" readonly="state not in ('draft', 'submitted')"/>
+                        </group>
+                        <group>
+                            <field name="date" readonly="state not in ('draft', 'submitted')"/>
+                            <field name="time_extension_days" readonly="state not in ('draft', 'submitted')"/>
+                            <field name="approved_by_id" invisible="not approved_by_id"/>
+                            <field name="approved_date" invisible="not approved_date"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Changes" name="changes">
+                            <field name="line_ids" readonly="state not in ('draft', 'submitted')">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="contract_id" column_invisible="True"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="change_type"/>
+                                    <field name="contract_line_id" required="change_type == 'change'" readonly="change_type != 'change'"/>
+                                    <field name="item_no"/>
+                                    <field name="product_id" optional="hide"/>
+                                    <field name="name"/>
+                                    <field name="uom_id"/>
+                                    <field name="quantity"/>
+                                    <field name="price_unit"/>
+                                    <field name="cost_unit" optional="hide" groups="dvz_contract.group_dvz_show_cost"/>
+                                    <field name="price_subtotal" sum="Total"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer">
+                                <field name="amount_total" class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </page>
+                        <page string="Description" name="description">
+                            <field name="description"/>
+                        </page>
+                        <page string="BOQ Lines Added" name="applied" invisible="state != 'applied'">
+                            <field name="applied_line_ids">
+                                <list>
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="display_type" column_invisible="True"/>
+                                    <field name="item_no"/>
+                                    <field name="name"/>
+                                    <field name="quantity"/>
+                                    <field name="price_unit"/>
+                                    <field name="price_subtotal"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="dvz_variation_view_list" model="ir.ui.view">
+        <field name="name">dvz.contract.variation.list</field>
+        <field name="model">dvz.contract.variation</field>
+        <field name="arch" type="xml">
+            <list string="Variation Orders" decoration-muted="state == 'rejected'" decoration-info="state == 'draft'">
+                <field name="name"/>
+                <field name="title"/>
+                <field name="contract_id"/>
+                <field name="partner_id" optional="show"/>
+                <field name="date"/>
+                <field name="reason" optional="show"/>
+                <field name="time_extension_days" optional="hide"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="amount_total" sum="Total"/>
+                <field name="state" widget="badge" decoration-success="state == 'applied'" decoration-warning="state == 'submitted'" decoration-danger="state == 'rejected'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dvz_variation_view_search" model="ir.ui.view">
+        <field name="name">dvz.contract.variation.search</field>
+        <field name="model">dvz.contract.variation</field>
+        <field name="arch" type="xml">
+            <search string="Variation Orders">
+                <field name="name"/>
+                <field name="title"/>
+                <field name="contract_id"/>
+                <field name="instruction_ref"/>
+                <filter name="to_approve" string="To Approve" domain="[('state', '=', 'submitted')]"/>
+                <filter name="applied" string="Applied" domain="[('state', '=', 'applied')]"/>
+                <group>
+                    <filter name="group_contract" string="Contract" context="{'group_by': 'contract_id'}"/>
+                    <filter name="group_reason" string="Reason" context="{'group_by': 'reason'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dvz_variation" model="ir.actions.act_window">
+        <field name="name">Variation Orders</field>
+        <field name="res_model">dvz.contract.variation</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="dvz_variation_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No variation orders yet</p>
+            <p>Open a contract in progress and click <b>New Variation</b>.</p>
+        </field>
+    </record>
+</odoo>

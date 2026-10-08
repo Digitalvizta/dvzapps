@@ -1,0 +1,27 @@
+{
+    'name': 'Retention Release & Bank Guarantees',
+    'summary': 'Retention ledger, release at handover and after the defects period, bank guarantee expiry control.',
+    'description': 'Track retention held and released on every contract, release it at handover and at the end of '
+                   'the defects liability period, and manage bank guarantees with expiry reminders.',
+    'version': '19.0.1.0.0',
+    'category': 'Services/Contracting',
+    'author': 'DigitalVizta',
+    'website': 'https://digitalvizta.net',
+    'support': 'info@digitalvizta.net',
+    'license': 'OPL-1',
+    'depends': ['dvz_contract_ipc'],
+    'data': [
+        'security/security.xml',
+        'security/ir.model.access.csv',
+        'data/sequence.xml',
+        'data/cron.xml',
+        'views/dvz_retention_views.xml',
+        'views/dvz_guarantee_views.xml',
+        'views/dvz_contract_views.xml',
+        'views/res_config_settings_views.xml',
+        'views/menus.xml',
+    ],
+    'installable': True,
+    'price': 99.0,
+    'currency': 'USD',
+}

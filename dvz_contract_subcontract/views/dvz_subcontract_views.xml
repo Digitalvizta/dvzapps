@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Main contract: subcontracts placed -->
+    <record id="dvz_contract_view_form_subcontract" model="ir.ui.view">
+        <field name="name">dvz.contract.form.subcontract</field>
+        <field name="model">dvz.contract</field>
+        <field name="inherit_id" ref="dvz_contract.dvz_contract_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_handover']" position="before">
+                <button name="action_new_subcontract" string="New Subcontract" type="object"
+                        invisible="contract_type != 'client' or state not in ('draft', 'progress')"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_subcontracts" type="object" class="oe_stat_button" icon="fa-users"
+                        invisible="contract_type != 'client' or not subcontract_count">
+                    <div class="o_stat_info">
+                        <span class="o_stat_value"><field name="subcontracted_value" widget="monetary" nolabel="1"/></span>
+                        <span class="o_stat_text">Subcontracted</span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//field[@name='project_id']" position="after">
+                <field name="parent_contract_id" invisible="contract_type != 'subcontract'"
+                       required="contract_type == 'subcontract'" readonly="state != 'draft'"/>
+            </xpath>
+            <xpath expr="//page[@name='cost_control']//field[@name='committed_cost']" position="before">
+                <field name="subcontracted_value" invisible="contract_type != 'client'"/>
+                <field name="subcontract_count" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- Subcontract form: same engine, vendor-side labels -->
+    <record id="dvz_subcontract_view_form" model="ir.ui.view">
+        <field name="name">dvz.contract.form.subcontract.primary</field>
+        <field name="model">dvz.contract</field>
+        <field name="inherit_id" ref="dvz_contract.dvz_contract_view_form"/>
+        <field name="mode">primary</field>
+        <field name="priority">30</field>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="attributes">
+                <attribute name="string">Subcontract</attribute>
+            </xpath>
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="string">Subcontractor</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="dvz_subcontract_view_list" model="ir.ui.view">
+        <field name="name">dvz.contract.list.subcontract</field>
+        <field name="model">dvz.contract</field>
+        <field name="priority">30</field>
+        <field name="arch" type="xml">
+            <list string="Subcontracts" decoration-muted="state in ('closed', 'cancel')" decoration-info="state == 'draft'">
+                <field name="name"/>
+                <field name="title" optional="show"/>
+                <field name="partner_id" string="Subcontractor"/>
+                <field name="parent_contract_id"/>
+                <field name="project_id" optional="show"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="amount_untaxed" sum="Total"/>
+                <field name="state" widget="badge" decoration-success="state == 'progress'" decoration-info="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_dvz_subcontract" model="ir.actions.act_window">
+        <field name="name">Subcontracts</field>
+        <field name="res_model">dvz.contract</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('contract_type', '=', 'subcontract')]</field>
+        <field name="context">{'default_contract_type': 'subcontract'}</field>
+        <field name="search_view_id" ref="dvz_contract.dvz_contract_view_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('dvz_subcontract_view_list')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('dvz_subcontract_view_form')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No subcontracts yet</p>
+            <p>From a main contract click <b>New Subcontract</b>, choose the subcontractor and add the BOQ.</p>
+        </field>
+    </record>
+
+    <record id="action_dvz_subcontract_certificate" model="ir.actions.act_window">
+        <field name="name">Subcontractor Certificates</field>
+        <field name="res_model">dvz.contract.certificate</field>
+        <field name="view_mode">list,form,pivot</field>
+        <field name="domain">[('contract_type', '=', 'subcontract')]</field>
+        <field name="search_view_id" ref="dvz_contract_ipc.dvz_certificate_view_search"/>
+    </record>
+</odoo>

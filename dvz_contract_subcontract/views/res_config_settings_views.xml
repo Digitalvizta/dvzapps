@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_subcontract" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.dvz_contract_subcontract</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="dvz_contract_ipc.res_config_settings_view_form_ipc"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='dvz_ipc']" position="after">
+                <block title="Subcontractors" name="dvz_subcontract">
+                    <setting id="dvz_sub_use_main_analytic" help="Subcontract bills land on the main contract's analytic account for cost control">
+                        <field name="dvz_sub_use_main_analytic"/>
+                    </setting>
+                    <setting id="dvz_sub_accounts" string="Bills journal, product and accounts" help="Vendor-side accounts for subcontractor certificates">
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label for="dvz_sub_journal_id" string="Bills journal" class="col-lg-5 o_light_label"/>
+                                <field name="dvz_sub_journal_id"/>
+                            </div>
+                            <div class="row">
+                                <label for="dvz_sub_product_id" string="Work product" class="col-lg-5 o_light_label"/>
+                                <field name="dvz_sub_product_id"/>
+                            </div>
+                            <div class="row">
+                                <label for="dvz_sub_cost_account_id" string="Cost account" class="col-lg-5 o_light_label"/>
+                                <field name="dvz_sub_cost_account_id"/>
+                            </div>
+                            <div class="row">
+                                <label for="dvz_sub_retention_account_id" string="Retention payable" class="col-lg-5 o_light_label"/>
+                                <field name="dvz_sub_retention_account_id"/>
+                            </div>
+                            <div class="row">
+                                <label for="dvz_sub_advance_account_id" string="Advances paid" class="col-lg-5 o_light_label"/>
+                                <field name="dvz_sub_advance_account_id"/>
+                            </div>
+                            <div class="row">
+                                <label for="dvz_sub_backcharge_account_id" string="Back-charges" class="col-lg-5 o_light_label"/>
+                                <field name="dvz_sub_backcharge_account_id"/>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>
