@@ -20,6 +20,7 @@
         'report/contract_report.xml',
     ],
     'application': True,
+    'images': ['static/description/banner.png'],
     'installable': True,
     'price': 0,
     'currency': 'USD',

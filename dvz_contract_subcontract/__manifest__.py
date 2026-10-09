@@ -16,6 +16,7 @@
         'views/res_config_settings_views.xml',
         'views/menus.xml',
     ],
+    'images': ['static/description/banner.png'],
     'installable': True,
     'price': 99.0,
     'currency': 'USD',

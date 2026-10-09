@@ -20,6 +20,7 @@
         'views/menus.xml',
         'report/certificate_report.xml',
     ],
+    'images': ['static/description/banner.png'],
     'installable': True,
     'price': 149.0,
     'currency': 'USD',

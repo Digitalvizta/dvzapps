@@ -20,6 +20,7 @@
         'views/menus.xml',
         'report/variation_report.xml',
     ],
+    'images': ['static/description/banner.png'],
     'installable': True,
     'price': 99.0,
     'currency': 'USD',

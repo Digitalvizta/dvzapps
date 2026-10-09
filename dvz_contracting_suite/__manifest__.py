@@ -18,6 +18,7 @@
     ],
     'data': [],
     'application': True,
+    'images': ['static/description/banner.png'],
     'installable': True,
     'price': 349.0,
     'currency': 'USD',
