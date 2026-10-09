@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_procurement" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.dvz_contract_procurement</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="dvz_contract.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='dvz_contract_boq']" position="after">
+                <block title="Procurement" name="dvz_procurement">
+                    <setting id="dvz_mr_approval" help="Material requests need a contracting manager's approval before RFQs are created">
+                        <field name="dvz_mr_approval"/>
+                    </setting>
+                    <setting id="dvz_block_over_budget" help="Only contracting managers can confirm a purchase order that takes a BOQ item over its cost budget. Otherwise a warning is logged.">
+                        <field name="dvz_block_over_budget"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

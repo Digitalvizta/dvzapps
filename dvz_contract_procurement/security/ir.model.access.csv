@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dvz_mr_user,dvz.material.request user,model_dvz_material_request,dvz_contract.group_dvz_contract_user,1,1,1,0
+access_dvz_mr_manager,dvz.material.request manager,model_dvz_material_request,dvz_contract.group_dvz_contract_manager,1,1,1,1
+access_dvz_mr_line_user,dvz.material.request.line user,model_dvz_material_request_line,dvz_contract.group_dvz_contract_user,1,1,1,1
+access_dvz_mr_purchase,dvz.material.request purchase,model_dvz_material_request,purchase.group_purchase_user,1,1,0,0
+access_dvz_mr_line_purchase,dvz.material.request.line purchase,model_dvz_material_request_line,purchase.group_purchase_user,1,1,0,0
+access_dvz_contract_purchase,dvz.contract purchase,dvz_contract.model_dvz_contract,purchase.group_purchase_user,1,0,0,0
+access_dvz_contract_line_purchase,dvz.contract.line purchase,dvz_contract.model_dvz_contract_line,purchase.group_purchase_user,1,0,0,0

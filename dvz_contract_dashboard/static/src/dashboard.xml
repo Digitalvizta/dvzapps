@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="dvz_contract_dashboard.Dashboard">
+        <div class="o_action o_dvz_dashboard h-100 overflow-auto">
+            <div t-if="state.loading" class="p-5 text-center text-muted">
+                <i class="fa fa-circle-o-notch fa-spin fa-2x"/>
+            </div>
+            <div t-else="" class="container-fluid py-3 px-3 px-lg-4">
+                <t t-set="d" t-value="state.data"/>
+                <t t-set="k" t-value="d.kpi"/>
+                <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2">
+                    <div>
+                        <h2 class="mb-0 fw-bold">Contracting Dashboard</h2>
+                        <div class="text-muted small"><t t-esc="d.company"/> · <t t-esc="d.today"/></div>
+                    </div>
+                    <button class="btn btn-secondary" t-on-click="() => this.load()">
+                        <i class="fa fa-refresh me-1"/>Refresh
+                    </button>
+                </div>
+
+                <!-- KPI cards -->
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-md-4 col-xxl-2">
+                        <div class="o_dvz_card o_dvz_navy" t-on-click="() => this.openList('dvz.contract', d.domains.contracts, 'Active Contracts')">
+                            <div class="o_dvz_label">Active contracts</div>
+                            <div class="o_dvz_value"><t t-esc="k.value.short"/></div>
+                            <div class="o_dvz_sub"><t t-esc="k.active"/> contracts in progress</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-xxl-2">
+                        <div class="o_dvz_card o_dvz_blue" t-on-click="() => this.openAction('dvz_contract_ipc.action_dvz_certificate')">
+                            <div class="o_dvz_label">Certified to date</div>
+                            <div class="o_dvz_value"><t t-esc="k.certified.short"/></div>
+                            <div class="progress o_dvz_progress"><div class="progress-bar bg-light" t-attf-style="width: {{ cap(k.certified_percent) }}%"/></div>
+                            <div class="o_dvz_sub"><t t-esc="k.certified_percent"/>% of contract value</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-xxl-2">
+                        <div class="o_dvz_card o_dvz_white" t-on-click="() => this.openList('account.move', d.domains.receivable, 'Open Client Invoices')">
+                            <div class="o_dvz_label">Receivable</div>
+                            <div class="o_dvz_value"><t t-esc="k.receivable.short"/></div>
+                            <div t-attf-class="o_dvz_sub #{k.overdue.value ? 'text-danger fw-bold' : ''}">
+                                <t t-esc="k.overdue.short"/> overdue
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-xxl-2">
+                        <div class="o_dvz_card o_dvz_white" t-on-click="() => this.openAction('dvz_contract_retention.action_dvz_retention_ledger')">
+                            <div class="o_dvz_label">Retention held</div>
+                            <div class="o_dvz_value"><t t-esc="k.retention.short"/></div>
+                            <div class="o_dvz_sub">Advance to recover <t t-esc="k.advance.short"/></div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-xxl-2">
+                        <div class="o_dvz_card o_dvz_white" t-on-click="() => this.openAction('dvz_contract_procurement.action_dvz_budget_vs_actual')">
+                            <div class="o_dvz_label">Cost vs budget</div>
+                            <div class="o_dvz_value"><t t-esc="k.cost_used_percent"/>%</div>
+                            <div class="progress o_dvz_progress"><div t-attf-class="progress-bar #{barClass(k.cost_used_percent)}" t-attf-style="width: {{ cap(k.cost_used_percent) }}%"/></div>
+                            <div class="o_dvz_sub">Margin <t t-esc="k.planned_margin"/>% planned · <t t-esc="k.forecast_margin"/>% forecast</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4 col-xxl-2">
+                        <div t-attf-class="o_dvz_card #{k.approvals ? 'o_dvz_amber' : 'o_dvz_white'}">
+                            <div class="o_dvz_label">Waiting for approval</div>
+                            <div class="o_dvz_value"><t t-esc="k.approvals"/></div>
+                            <div class="o_dvz_sub"><t t-esc="k.guarantees_attention"/> guarantees need attention</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <!-- contracts table -->
+                    <div class="col-xl-8">
+                        <div class="o_dvz_panel h-100">
+                            <div class="o_dvz_panel_title">Contracts</div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover align-middle mb-0">
+                                    <thead>
+                                        <tr class="text-muted small">
+                                            <th>Contract</th>
+                                            <th>Client</th>
+                                            <th class="text-end">Value</th>
+                                            <th style="min-width: 120px">Billed</th>
+                                            <th style="min-width: 120px">Cost used</th>
+                                            <th class="text-end">Margin</th>
+                                            <th class="text-end">Retention</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="d.contracts" t-as="c" t-key="c.id" class="o_dvz_row" t-on-click="() => this.openRecord('dvz.contract', c.id)">
+                                            <td>
+                                                <div class="fw-bold"><t t-esc="c.name"/>
+                                                    <span t-if="c.late" class="badge text-bg-danger ms-1">Late</span>
+                                                    <span t-if="c.over_budget" class="badge text-bg-warning ms-1"><t t-esc="c.over_budget"/> over budget</span>
+                                                </div>
+                                                <div class="small text-muted text-truncate" style="max-width: 260px"><t t-esc="c.title"/></div>
+                                            </td>
+                                            <td class="small"><t t-esc="c.client"/></td>
+                                            <td class="text-end fw-bold text-nowrap"><t t-esc="c.value.short"/></td>
+                                            <td>
+                                                <div class="progress o_dvz_mini"><div class="progress-bar bg-primary" t-attf-style="width: {{ cap(c.certified_percent) }}%"/></div>
+                                                <div class="small text-muted"><t t-esc="c.certified_percent"/>%</div>
+                                            </td>
+                                            <td>
+                                                <div class="progress o_dvz_mini"><div t-attf-class="progress-bar #{barClass(c.cost_used_percent)}" t-attf-style="width: {{ cap(c.cost_used_percent) }}%"/></div>
+                                                <div class="small text-muted"><t t-esc="c.cost_used_percent"/>%</div>
+                                            </td>
+                                            <td t-attf-class="text-end text-nowrap #{c.forecast_margin &lt; c.planned_margin ? 'text-danger' : 'text-success'}">
+                                                <t t-esc="c.forecast_margin"/>%
+                                            </td>
+                                            <td class="text-end text-nowrap"><t t-esc="c.retention.short"/></td>
+                                        </tr>
+                                        <tr t-if="!d.contracts.length"><td colspan="7" class="text-muted text-center py-4">No contracts in progress yet.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- approvals + guarantees -->
+                    <div class="col-xl-4 d-flex flex-column gap-3">
+                        <div class="o_dvz_panel">
+                            <div class="o_dvz_panel_title">To do</div>
+                            <div t-foreach="d.approvals" t-as="a" t-key="a_index"
+                                 class="d-flex align-items-center justify-content-between py-2 border-bottom o_dvz_row"
+                                 t-on-click="() => this.openList(a.model, a.domain, a.label)">
+                                <span><i t-attf-class="fa #{a.icon} me-2 text-muted"/><t t-esc="a.label"/></span>
+                                <span t-attf-class="badge rounded-pill #{a.count ? 'text-bg-warning' : 'text-bg-light'}"><t t-esc="a.count"/></span>
+                            </div>
+                        </div>
+                        <div class="o_dvz_panel flex-grow-1">
+                            <div class="o_dvz_panel_title d-flex justify-content-between">
+                                <span>Guarantees expiring</span>
+                                <span class="small text-muted">Given: <t t-esc="k.guarantees_given.short"/></span>
+                            </div>
+                            <div t-foreach="d.guarantees" t-as="g" t-key="g.id"
+                                 class="d-flex justify-content-between py-2 border-bottom o_dvz_row"
+                                 t-on-click="() => this.openRecord('dvz.bank.guarantee', g.id)">
+                                <div>
+                                    <div class="fw-bold small"><t t-esc="g.name"/></div>
+                                    <div class="small text-muted"><t t-esc="g.type"/> · <t t-esc="g.partner"/></div>
+                                </div>
+                                <div class="text-end">
+                                    <div class="small fw-bold"><t t-esc="g.amount.short"/></div>
+                                    <div t-attf-class="small #{g.days &lt; 0 ? 'text-danger fw-bold' : 'text-warning'}">
+                                        <t t-if="g.days &lt; 0">Expired</t>
+                                        <t t-else="">in <t t-esc="g.days"/> days</t>
+                                    </div>
+                                </div>
+                            </div>
+                            <div t-if="!d.guarantees.length" class="text-muted small py-3">No guarantee expires soon.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <!-- billing chart -->
+                    <div class="col-xl-5">
+                        <div class="o_dvz_panel h-100">
+                            <div class="o_dvz_panel_title">Certified per month</div>
+                            <div class="o_dvz_chart">
+                                <div t-foreach="d.billing" t-as="b" t-key="b_index" class="o_dvz_col">
+                                    <div class="o_dvz_col_value"><t t-esc="b.short"/></div>
+                                    <div class="o_dvz_col_track">
+                                        <div class="o_dvz_bar o_dvz_bar_blue" t-attf-style="height: {{ pct(b.amount, d.billing_max) }}%"/>
+                                    </div>
+                                    <div class="o_dvz_col_label"><t t-esc="b.label"/></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- cash flow chart -->
+                    <div class="col-xl-7">
+                        <div class="o_dvz_panel h-100 o_dvz_click" t-on-click="() => this.openAction('dvz_contract_cashflow.action_server_dvz_cashflow')">
+                            <div class="o_dvz_panel_title d-flex justify-content-between">
+                                <span>Cash flow forecast · next 6 months</span>
+                                <span class="small">
+                                    <span class="o_dvz_dot o_dvz_bar_green"/> In
+                                    <span class="o_dvz_dot o_dvz_bar_red ms-2"/> Out
+                                </span>
+                            </div>
+                            <div class="o_dvz_chart">
+                                <div t-foreach="d.cashflow" t-as="m" t-key="m_index" class="o_dvz_col">
+                                    <div t-attf-class="o_dvz_col_value #{m.net &lt; 0 ? 'text-danger' : 'text-success'}"><t t-esc="m.net_short"/></div>
+                                    <div class="o_dvz_col_track o_dvz_pair">
+                                        <div class="o_dvz_bar o_dvz_bar_green" t-attf-style="height: {{ pct(m.cash_in, d.cashflow_max) }}%" t-att-title="m.in_short"/>
+                                        <div class="o_dvz_bar o_dvz_bar_red" t-attf-style="height: {{ pct(m.cash_out, d.cashflow_max) }}%" t-att-title="m.out_short"/>
+                                    </div>
+                                    <div class="o_dvz_col_label"><t t-esc="m.label"/></div>
+                                    <div t-attf-class="small #{m.cumulative &lt; 0 ? 'text-danger' : 'text-muted'}">Σ <t t-esc="m.cumulative_short"/></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

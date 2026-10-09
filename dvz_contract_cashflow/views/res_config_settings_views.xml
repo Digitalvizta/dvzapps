@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_cashflow" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.dvz_contract_cashflow</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="dvz_contract_retention.res_config_settings_view_form_retention"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='dvz_retention']" position="after">
+                <block title="Cash Flow Forecast" name="dvz_cashflow">
+                    <setting id="dvz_cash_client_days" string="Client payment delay" help="Days after a certificate or invoice date when clients usually pay">
+                        <field name="dvz_cash_client_days"/>
+                    </setting>
+                    <setting id="dvz_cash_vendor_days" string="Vendor payment delay" help="Days after a bill or delivery date when we usually pay">
+                        <field name="dvz_cash_vendor_days"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

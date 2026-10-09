@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Portal home cards -->
+    <template id="portal_my_home_dvz" name="Contracting" customize_show="True" inherit_id="portal.portal_my_home" priority="40">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="before">
+            <t t-set="portal_client_category_enable" t-value="True"/>
+        </xpath>
+        <div id="portal_client_category" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/dvz_contract/static/description/icon.png'"/>
+                <t t-set="title">Waiting for my approval</t>
+                <t t-set="text">Payment certificates and variation orders to review</t>
+                <t t-set="url" t-value="'/my/contracting/approvals'"/>
+                <t t-set="placeholder_count" t-value="'dvz_approval_count'"/>
+            </t>
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/dvz_contract/static/description/icon.png'"/>
+                <t t-set="title">Contracts</t>
+                <t t-set="text">Progress, certificates and variations of your projects</t>
+                <t t-set="url" t-value="'/my/contracting'"/>
+                <t t-set="placeholder_count" t-value="'dvz_contract_count'"/>
+            </t>
+        </div>
+    </template>
+
+    <template id="portal_breadcrumbs_dvz" inherit_id="portal.portal_breadcrumbs" priority="40">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name in ('dvz_contracts', 'dvz_contract', 'dvz_certificate', 'dvz_variation')"
+                t-attf-class="breadcrumb-item #{'active' if page_name == 'dvz_contracts' else ''}">
+                <a t-if="page_name != 'dvz_contracts'" href="/my/contracting">Contracts</a>
+                <t t-else="">Contracts</t>
+            </li>
+            <li t-if="page_name == 'dvz_approvals'" class="breadcrumb-item active">Waiting for my approval</li>
+            <li t-if="page_name in ('dvz_certificate', 'dvz_variation')" class="breadcrumb-item">
+                <a t-attf-href="/my/contracting/contract/#{contract.id}"><t t-esc="contract.name"/></a>
+            </li>
+            <li t-if="page_name == 'dvz_contract'" class="breadcrumb-item active"><t t-esc="contract.name"/></li>
+            <li t-if="page_name == 'dvz_certificate'" class="breadcrumb-item active"><t t-esc="cert.name"/></li>
+            <li t-if="page_name == 'dvz_variation'" class="breadcrumb-item active"><t t-esc="variation.name"/></li>
+        </xpath>
+    </template>
+
+    <template id="dvz_portal_state_badge" name="Contracting state badge">
+        <t t-set="badge_class" t-value="{'submitted': 'text-bg-warning', 'approved': 'text-bg-success', 'invoiced': 'text-bg-primary',
+                                        'applied': 'text-bg-success', 'rejected': 'text-bg-danger', 'cancel': 'text-bg-secondary',
+                                        'progress': 'text-bg-primary', 'handover': 'text-bg-info', 'closed': 'text-bg-secondary'}.get(doc.state, 'text-bg-light')"/>
+        <span t-attf-class="badge rounded-pill #{badge_class}">
+            <t t-if="doc.state == 'submitted'">Waiting for approval</t>
+            <t t-else="" t-out="dict(doc._fields['state'].selection).get(doc.state)"/>
+        </span>
+    </template>
+
+    <!-- Contracts list -->
+    <template id="portal_my_dvz_contracts" name="My Contracts">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Contracts</t>
+            </t>
+            <p t-if="not contracts" class="alert alert-warning">There are no contracts for your account yet.</p>
+            <t t-if="contracts" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Contract</th>
+                        <th>Project</th>
+                        <th class="text-end">Value</th>
+                        <th class="text-end">Certified</th>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="contracts" t-as="contract">
+                        <td>
+                            <a t-attf-href="/my/contracting/contract/#{contract.id}"><t t-esc="contract.name"/></a>
+                            <div class="small text-muted" t-esc="contract.title"/>
+                        </td>
+                        <td><t t-esc="contract.project_id.name"/></td>
+                        <td class="text-end"><span t-field="contract.amount_untaxed"/></td>
+                        <td class="text-end"><t t-esc="'%.1f' % contract.certified_percent"/>%</td>
+                        <td class="text-center"><t t-call="dvz_contract_portal.dvz_portal_state_badge"><t t-set="doc" t-value="contract"/></t></td>
+                    </tr>
+                </tbody>
+            </t>
+        </t>
+    </template>
+
+    <!-- Approvals -->
+    <template id="portal_my_dvz_approvals" name="Waiting for my approval">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Waiting for my approval</t>
+            </t>
+            <p t-if="not certificates and not variations" class="alert alert-success">Nothing is waiting for your approval.</p>
+            <t t-if="certificates or variations" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Document</th>
+                        <th>Contract</th>
+                        <th>Date</th>
+                        <th class="text-end">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="certificates" t-as="cert">
+                        <td><a t-attf-href="/my/contracting/certificate/#{cert.id}">Payment certificate <t t-esc="cert.name"/></a></td>
+                        <td><t t-esc="cert.contract_id.name"/></td>
+                        <td><span t-field="cert.date"/></td>
+                        <td class="text-end"><span t-field="cert.amount_current"/></td>
+                    </tr>
+                    <tr t-foreach="variations" t-as="variation">
+                        <td><a t-attf-href="/my/contracting/variation/#{variation.id}">Variation <t t-esc="variation.name"/></a>
+                            <div class="small text-muted" t-esc="variation.title"/></td>
+                        <td><t t-esc="variation.contract_id.name"/></td>
+                        <td><span t-field="variation.date"/></td>
+                        <td class="text-end"><span t-field="variation.amount_total"/></td>
+                    </tr>
+                </tbody>
+            </t>
+        </t>
+    </template>
+
+    <!-- Contract detail -->
+    <template id="portal_my_dvz_contract" name="Contract">
+        <t t-call="portal.portal_layout">
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                        <div>
+                            <h3 class="mb-0"><t t-esc="contract.name"/></h3>
+                            <div class="text-muted"><t t-esc="contract.title"/></div>
+                        </div>
+                        <t t-call="dvz_contract_portal.dvz_portal_state_badge"><t t-set="doc" t-value="contract"/></t>
+                    </div>
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 col-md-3"><div class="border rounded p-3 h-100">
+                            <div class="small text-muted">Contract value</div>
+                            <div class="fs-5 fw-bold"><span t-field="contract.amount_untaxed"/></div></div></div>
+                        <div class="col-6 col-md-3"><div class="border rounded p-3 h-100">
+                            <div class="small text-muted">Certified to date</div>
+                            <div class="fs-5 fw-bold"><span t-field="contract.certified_amount"/></div>
+                            <div class="progress mt-1" style="height: 6px"><div class="progress-bar" t-attf-style="width: #{min(contract.certified_percent, 100)}%"/></div>
+                        </div></div>
+                        <div class="col-6 col-md-3"><div class="border rounded p-3 h-100">
+                            <div class="small text-muted">Project</div>
+                            <div class="fw-bold"><t t-esc="contract.project_id.name or '-'"/></div></div></div>
+                        <div class="col-6 col-md-3"><div class="border rounded p-3 h-100">
+                            <div class="small text-muted">Planned completion</div>
+                            <div class="fw-bold"><span t-field="contract.date_end"/></div></div></div>
+                    </div>
+
+                    <h5>Payment certificates</h5>
+                    <p t-if="not certificates" class="text-muted">No certificates yet.</p>
+                    <t t-if="certificates" t-call="portal.portal_table">
+                        <thead><tr class="active"><th>Certificate</th><th>Period</th><th class="text-end">Work this period</th>
+                            <th class="text-end">Net due</th><th class="text-center">Status</th></tr></thead>
+                        <tbody>
+                            <tr t-foreach="certificates" t-as="cert">
+                                <td><a t-attf-href="/my/contracting/certificate/#{cert.id}"><t t-esc="cert.name"/></a></td>
+                                <td><span t-field="cert.period_start"/> - <span t-field="cert.period_end"/></td>
+                                <td class="text-end"><span t-field="cert.amount_current"/></td>
+                                <td class="text-end"><span t-field="cert.amount_due"/></td>
+                                <td class="text-center"><t t-call="dvz_contract_portal.dvz_portal_state_badge"><t t-set="doc" t-value="cert"/></t></td>
+                            </tr>
+                        </tbody>
+                    </t>
+
+                    <h5 class="mt-4">Variation orders</h5>
+                    <p t-if="not variations" class="text-muted">No variation orders yet.</p>
+                    <t t-if="variations" t-call="portal.portal_table">
+                        <thead><tr class="active"><th>Variation</th><th>Subject</th><th class="text-end">Value</th>
+                            <th class="text-end">Extension</th><th class="text-center">Status</th></tr></thead>
+                        <tbody>
+                            <tr t-foreach="variations" t-as="variation">
+                                <td><a t-attf-href="/my/contracting/variation/#{variation.id}"><t t-esc="variation.name"/></a></td>
+                                <td><t t-esc="variation.title"/></td>
+                                <td class="text-end"><span t-field="variation.amount_total"/></td>
+                                <td class="text-end"><t t-esc="variation.time_extension_days"/> days</td>
+                                <td class="text-center"><t t-call="dvz_contract_portal.dvz_portal_state_badge"><t t-set="doc" t-value="variation"/></t></td>
+                            </tr>
+                        </tbody>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Decision box (shared) -->
+    <template id="dvz_portal_decision" name="Contracting decision box">
+        <div t-if="message == 'approved'" class="alert alert-success">Thank you. Your approval has been recorded.</div>
+        <div t-if="message == 'rejected'" class="alert alert-warning">Your rejection and comment have been sent to the contractor.</div>
+        <div t-if="error" class="alert alert-danger" t-esc="error"/>
+        <div t-if="doc.portal_decision" t-attf-class="alert #{'alert-success' if doc.portal_decision == 'approved' else 'alert-danger'}">
+            <b><t t-out="dict(doc._fields['portal_decision'].selection).get(doc.portal_decision)"/></b>
+            by <t t-esc="doc.portal_partner_id.name"/> on <span t-field="doc.portal_decision_date"/>
+            <div t-if="doc.portal_comment" class="mt-1" t-esc="doc.portal_comment"/>
+        </div>
+        <form t-if="can_decide" method="post" t-att-action="action_url" class="border rounded p-3 bg-light">
+            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+            <h5 class="mb-2">Your decision</h5>
+            <textarea name="comment" class="form-control mb-2" rows="3"
+                      placeholder="Comment (required to reject), e.g. quantities of item B.03 to be re-measured"/>
+            <div class="d-flex gap-2">
+                <button type="submit" name="decision" value="approve" class="btn btn-success">
+                    <i class="fa fa-check me-1"/>Approve
+                </button>
+                <button type="submit" name="decision" value="reject" class="btn btn-outline-danger">
+                    <i class="fa fa-times me-1"/>Reject
+                </button>
+            </div>
+        </form>
+    </template>
+
+    <!-- Certificate detail -->
+    <template id="portal_my_dvz_certificate" name="Payment Certificate">
+        <t t-call="portal.portal_layout">
+            <div class="row mt-3">
+                <div class="col-12 col-lg-9">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                        <div>
+                            <h3 class="mb-0">Payment certificate <t t-esc="cert.name"/></h3>
+                            <div class="text-muted">Certificate no. <t t-esc="cert.number"/> · <t t-esc="contract.name"/> <t t-esc="contract.title"/></div>
+                            <div class="text-muted small">Period <span t-field="cert.period_start"/> - <span t-field="cert.period_end"/></div>
+                        </div>
+                        <t t-call="dvz_contract_portal.dvz_portal_state_badge"><t t-set="doc" t-value="cert"/></t>
+                    </div>
+                    <t t-call="portal.portal_table">
+                        <thead>
+                            <tr class="active">
+                                <th>Item</th><th>Description</th><th>Unit</th>
+                                <th class="text-end">BOQ Qty</th><th class="text-end">Rate</th>
+                                <th class="text-end">Previous</th><th class="text-end">This period</th>
+                                <th class="text-end">Cumulative</th><th class="text-end">Amount this period</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="lines" t-as="line">
+                                <tr t-if="line.display_type" class="table-light fw-bold"><td colspan="9" t-esc="line.name"/></tr>
+                                <tr t-else="">
+                                    <td><t t-esc="line.item_no"/></td>
+                                    <td><t t-esc="line.name"/></td>
+                                    <td><t t-esc="line.uom_id.name"/></td>
+                                    <td class="text-end"><t t-esc="'{:,.2f}'.format(line.qty_contract)"/></td>
+                                    <td class="text-end"><span t-field="line.price_unit"/></td>
+                                    <td class="text-end"><t t-esc="'{:,.2f}'.format(line.qty_previous)"/></td>
+                                    <td class="text-end fw-bold"><t t-esc="'{:,.2f}'.format(line.qty_current)"/></td>
+                                    <td class="text-end"><t t-esc="'{:,.2f}'.format(line.qty_cumulative)"/></td>
+                                    <td class="text-end"><span t-field="line.amount_current"/></td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </t>
+                    <div class="row justify-content-end mt-3">
+                        <div class="col-md-6">
+                            <table class="table table-sm">
+                                <tr><td>Previously certified</td><td class="text-end"><span t-field="cert.amount_previous"/></td></tr>
+                                <tr class="fw-bold"><td>Work done this period</td><td class="text-end"><span t-field="cert.amount_current"/></td></tr>
+                                <tr><td>Retention (<t t-esc="cert.retention_percent"/>%)</td><td class="text-end">- <span t-field="cert.retention_amount"/></td></tr>
+                                <tr t-if="cert.advance_recovery_amount"><td>Advance recovery</td><td class="text-end">- <span t-field="cert.advance_recovery_amount"/></td></tr>
+                                <tr t-foreach="cert.deduction_ids" t-as="ded"><td><t t-esc="ded.name"/></td><td class="text-end">- <span t-field="ded.amount"/></td></tr>
+                                <tr class="fw-bold fs-5"><td>Net amount due (excl. VAT)</td><td class="text-end"><span t-field="cert.amount_due"/></td></tr>
+                                <tr class="text-muted"><td>Cumulative progress</td><td class="text-end"><t t-esc="'%.1f' % cert.progress_percent"/>%</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-lg-3">
+                    <t t-call="dvz_contract_portal.dvz_portal_decision">
+                        <t t-set="doc" t-value="cert"/>
+                        <t t-set="action_url" t-value="'/my/contracting/certificate/%s/decide' % cert.id"/>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Variation detail -->
+    <template id="portal_my_dvz_variation" name="Variation Order">
+        <t t-call="portal.portal_layout">
+            <div class="row mt-3">
+                <div class="col-12 col-lg-9">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                        <div>
+                            <h3 class="mb-0">Variation <t t-esc="variation.name"/></h3>
+                            <div class="fw-bold"><t t-esc="variation.title"/></div>
+                            <div class="text-muted small"><t t-esc="contract.name"/> · reference <t t-esc="variation.instruction_ref or '-'"/>
+                                · time extension <t t-esc="variation.time_extension_days"/> days</div>
+                        </div>
+                        <t t-call="dvz_contract_portal.dvz_portal_state_badge"><t t-set="doc" t-value="variation"/></t>
+                    </div>
+                    <div t-if="variation.description" class="mb-3" t-field="variation.description"/>
+                    <t t-call="portal.portal_table">
+                        <thead>
+                            <tr class="active"><th>Item</th><th>Description</th><th>Unit</th>
+                                <th class="text-end">Qty (+/-)</th><th class="text-end">Rate</th><th class="text-end">Amount</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="variation.line_ids" t-as="line">
+                                <td><t t-esc="line.item_no"/></td>
+                                <td><t t-esc="line.name"/></td>
+                                <td><t t-esc="line.uom_id.name"/></td>
+                                <td class="text-end"><t t-esc="'{:,.2f}'.format(line.quantity)"/></td>
+                                <td class="text-end"><span t-field="line.price_unit"/></td>
+                                <td class="text-end"><span t-field="line.price_subtotal"/></td>
+                            </tr>
+                        </tbody>
+                    </t>
+                    <div class="text-end fs-5 fw-bold mt-2">Variation value: <span t-field="variation.amount_total"/></div>
+                </div>
+                <div class="col-12 col-lg-3">
+                    <t t-call="dvz_contract_portal.dvz_portal_decision">
+                        <t t-set="doc" t-value="variation"/>
+                        <t t-set="action_url" t-value="'/my/contracting/variation/%s/decide' % variation.id"/>
+                    </t>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

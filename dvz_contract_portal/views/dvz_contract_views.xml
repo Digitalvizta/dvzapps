@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_contract_view_form_portal" model="ir.ui.view">
+        <field name="name">dvz.contract.form.portal</field>
+        <field name="model">dvz.contract</field>
+        <field name="inherit_id" ref="dvz_contract.dvz_contract_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='user_id']" position="after">
+                <field name="consultant_ids" widget="many2many_tags" invisible="contract_type != 'client'"
+                       options="{'no_create_edit': True}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="dvz_certificate_view_form_portal" model="ir.ui.view">
+        <field name="name">dvz.contract.certificate.form.portal</field>
+        <field name="model">dvz.contract.certificate</field>
+        <field name="inherit_id" ref="dvz_contract_ipc.dvz_certificate_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='approved_date']" position="after">
+                <field name="portal_decision" invisible="not portal_decision" widget="badge"
+                       decoration-success="portal_decision == 'approved'" decoration-danger="portal_decision == 'rejected'"/>
+                <field name="portal_partner_id" invisible="not portal_partner_id"/>
+                <field name="portal_decision_date" invisible="not portal_decision_date"/>
+                <field name="portal_comment" invisible="not portal_comment"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="dvz_variation_view_form_portal" model="ir.ui.view">
+        <field name="name">dvz.contract.variation.form.portal</field>
+        <field name="model">dvz.contract.variation</field>
+        <field name="inherit_id" ref="dvz_contract_variation.dvz_variation_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='approved_date']" position="after">
+                <field name="portal_decision" invisible="not portal_decision" widget="badge"
+                       decoration-success="portal_decision == 'approved'" decoration-danger="portal_decision == 'rejected'"/>
+                <field name="portal_partner_id" invisible="not portal_partner_id"/>
+                <field name="portal_decision_date" invisible="not portal_decision_date"/>
+                <field name="portal_comment" invisible="not portal_comment"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -11,7 +11,7 @@ class DvzContract(models.Model):
     certified_percent = fields.Float('Certified %', compute='_compute_billing')
     retention_held = fields.Monetary('Retention Held', compute='_compute_billing')
     advance_move_ids = fields.One2many('account.move', 'dvz_contract_id', 'Contract Invoices')
-    advance_amount = fields.Monetary('Advance Invoiced', compute='_compute_advance')
+    advance_amount = fields.Monetary('Advance Invoiced', compute='_compute_advance', compute_sudo=True)
     advance_recovered = fields.Monetary('Advance Recovered', compute='_compute_billing')
     advance_balance = fields.Monetary('Advance to Recover', compute='_compute_billing')
     amount_to_certify = fields.Monetary('Remaining to Certify', compute='_compute_billing')

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="purchase_order_form_dvz" model="ir.ui.view">
+        <field name="name">purchase.order.form.dvz.contract</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_ref']" position="after">
+                <field name="dvz_contract_id" options="{'no_create': True}" readonly="state in ('purchase', 'cancel')"/>
+                <field name="dvz_material_request_id" invisible="not dvz_material_request_id"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/list/field[@name='name']" position="after">
+                <field name="dvz_contract_line_id" optional="show" column_invisible="not parent.dvz_contract_id"
+                       domain="[('contract_id', '=', parent.dvz_contract_id), ('display_type', '=', False)]"
+                       options="{'no_create': True}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="purchase_order_search_dvz" model="ir.ui.view">
+        <field name="name">purchase.order.search.dvz.contract</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='partner_id']" position="after">
+                <field name="dvz_contract_id"/>
+            </xpath>
+            <xpath expr="//filter[@name='my_Orders']" position="before">
+                <filter name="dvz_with_contract" string="Contract Purchases" domain="[('dvz_contract_id', '!=', False)]"/>
+                <filter name="dvz_group_contract" string="Contract" context="{'group_by': 'dvz_contract_id'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_dvz_purchase_orders" model="ir.actions.act_window">
+        <field name="name">Contract Purchases</field>
+        <field name="res_model">purchase.order</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="domain">[('dvz_contract_id', '!=', False)]</field>
+        <field name="context">{'search_default_dvz_group_contract': 1}</field>
+    </record>
+</odoo>

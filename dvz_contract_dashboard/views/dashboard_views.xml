@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_dvz_contract_dashboard" model="ir.actions.client">
+        <field name="name">Dashboard</field>
+        <field name="tag">dvz_contract_dashboard</field>
+    </record>
+
+    <menuitem id="menu_dvz_contract_dashboard" name="Dashboard" parent="dvz_contract.menu_dvz_contracting_root"
+              action="action_dvz_contract_dashboard" sequence="1"/>
+</odoo>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_dvz_procurement" name="Procurement" parent="dvz_contract.menu_dvz_contracting_root" sequence="25"/>
+    <menuitem id="menu_dvz_material_request" name="Material Requests" parent="menu_dvz_procurement"
+              action="action_dvz_material_request" sequence="10"/>
+    <menuitem id="menu_dvz_purchase_orders" name="Contract Purchases" parent="menu_dvz_procurement"
+              action="action_dvz_purchase_orders" sequence="20" groups="purchase.group_purchase_user"/>
+    <menuitem id="menu_dvz_budget_vs_actual" name="Budget vs Actual" parent="dvz_contract.menu_dvz_reporting"
+              action="action_dvz_budget_vs_actual" sequence="15" groups="dvz_contract.group_dvz_show_cost"/>
+</odoo>

@@ -29,6 +29,49 @@ def _account(env, company, code, name, account_type):
     return Account.create(vals)
 
 
+def _dvz_setup_accounting(env, pending=None):
+    """Load a chart of accounts if the company has none (Saudi chart by default)."""
+    company = env.company
+    if company.chart_template:
+        return
+    sa = _ref(env, 'base.sa')
+    if not company.country_id and sa:
+        company.country_id = sa
+    if sa and company.country_id == sa:
+        env['account.chart.template'].try_loading('sa', company, install_demo=False)
+    elif pending:
+        pending(env)
+    else:
+        env['account.chart.template'].try_loading('generic_coa', company, install_demo=False)
+
+
+def _ensure_journals(env, company):
+    Journal = env['account.journal'].with_company(company)
+
+    def journal(jtype, name, code):
+        j = Journal.search([('company_id', '=', company.id), ('type', '=', jtype)], limit=1)
+        return j or Journal.create({'name': name, 'code': code, 'type': jtype, 'company_id': company.id})
+
+    return journal('sale', 'Customer Invoices', 'INV'), journal('purchase', 'Vendor Bills', 'BILL')
+
+
+def _dvz_post_init(env):
+    """Entry point (post_init_hook).
+
+    When Accounting is installed in the same run, Odoo loads the chart of accounts only after
+    all modules are loaded. The demo needs accounts and journals, so in that case it is
+    chained after the chart loading instead of running now.
+    """
+    pending = getattr(env.registry, '_auto_install_template', None)
+    if pending or not env.company.chart_template:
+        def _run(env2):
+            _dvz_setup_accounting(env2, pending)
+            _dvz_load_demo(env2)
+        env.registry._auto_install_template = _run
+    else:
+        _dvz_load_demo(env)
+
+
 def _tax(env, company, use):
     taxes = env['account.tax'].search([
         ('company_id', '=', company.id), ('type_tax_use', '=', use),
@@ -75,13 +118,18 @@ def _dvz_load_demo(env):
     # ------------------------------------------------------------------ users / groups
     admin = _ref(env, 'base.user_admin')
     for xmlid in ('dvz_contract.group_dvz_contract_manager', 'dvz_contract.group_dvz_show_cost',
-                  'analytic.group_analytic_accounting'):
+                  'analytic.group_analytic_accounting', 'purchase.group_purchase_manager'):
         group = _ref(env, xmlid)
         if group and admin:
             admin.write({'group_ids': [(4, group.id)]}) if 'group_ids' in admin._fields else \
                 admin.write({'groups_id': [(4, group.id)]})
+    if admin:
+        # run the rest as the administrator (a contracting manager) so approvals pass
+        env = env(user=admin.id, su=True)
+        company = company.with_env(env)
 
     # ------------------------------------------------------------------ accounts & settings
+    sale_journal, purchase_journal = _ensure_journals(env, company)
     retention_rec = _account(env, company, '121500', 'Retention Receivable', 'asset_current')
     advance_rec = _account(env, company, '221500', 'Advances Received from Clients', 'liability_current')
     deductions = _account(env, company, '411900', 'Back-charges and Penalties (Clients)', 'income')
@@ -93,8 +141,6 @@ def _dvz_load_demo(env):
 
     sale_tax = _tax(env, company, 'sale')
     purchase_tax = _tax(env, company, 'purchase')
-    sale_journal = env['account.journal'].search([('company_id', '=', company.id), ('type', '=', 'sale')], limit=1)
-    purchase_journal = env['account.journal'].search([('company_id', '=', company.id), ('type', '=', 'purchase')], limit=1)
 
     Product = env['product.product']
     work_product = Product.create({'name': 'Construction Works (Certified)', 'type': 'service',
@@ -148,9 +194,13 @@ def _dvz_load_demo(env):
     Partner = env['res.partner']
 
     def partner(name, city, vat, is_sub=False):
-        return Partner.create({'name': name, 'is_company': True, 'city': city, 'country_id': sa.id if sa else False,
-                               'vat': vat, 'street': 'Demo Street', 'supplier_rank': 1 if is_sub else 0,
-                               'customer_rank': 0 if is_sub else 1})
+        vals = {'name': name, 'is_company': True, 'city': city, 'country_id': sa.id if sa else False,
+                'street': 'Demo Street', 'supplier_rank': 1 if is_sub else 0, 'customer_rank': 0 if is_sub else 1}
+        try:
+            with env.cr.savepoint():
+                return Partner.create(dict(vals, vat=vat))
+        except Exception:  # VAT validation (base_vat / e-invoicing) refused the demo number
+            return Partner.create(vals)
 
     riyadh_dev = partner('Riyadh Urban Development Co. (Demo)', 'Riyadh', '300000000000003')
     gulf_re = partner('Gulf Real Estate Developers (Demo)', 'Jeddah', '300000000100003')
@@ -367,6 +417,114 @@ def _dvz_load_demo(env):
         'name': 'LG-BID-2026-0044', 'guarantee_type': 'bid', 'direction': 'given', 'partner_id': eastern.id,
         'bank_id': bank.id, 'amount': 150000.0, 'issue_date': today - relativedelta(months=2),
         'expiry_date': today + relativedelta(months=1)})
+    _dvz_demo_procurement(env, company, c1, c2, uom, today)
+    _dvz_demo_portal(env, c1, c2)
     env['dvz.contract']._cron_dlp_reminders()
     env['dvz.bank.guarantee']._cron_guarantee_reminders()
+    env['dvz.cashflow.line']._rebuild(company)
     _logger.info('DigitalVizta Contracting demo data loaded.')
+
+
+# ---------------------------------------------------------------------- procurement
+def _dvz_demo_procurement(env, company, c1, c2, uom, today):
+    sa = _ref(env, 'base.sa')
+    Partner = env['res.partner']
+
+    def vendor(name, city):
+        return Partner.create({'name': name, 'is_company': True, 'city': city, 'street': 'Industrial Area',
+                               'country_id': sa.id if sa else False, 'supplier_rank': 1})
+
+    concrete_v = vendor('Najd Ready Mix Concrete (Demo)', 'Riyadh')
+    steel_v = vendor('Arabian Rebar Trading (Demo)', 'Dammam')
+    block_v = vendor('Riyadh Block Factory (Demo)', 'Riyadh')
+    fitout_v = vendor('Gulf Interiors Supply (Demo)', 'Jeddah')
+    purchase_tax = company.dvz_purchase_tax_ids[:1]
+
+    def product(name, unit, cost, seller, price):
+        vals = {
+            'name': name, 'type': 'consu', 'purchase_ok': True, 'sale_ok': False,
+            'standard_price': cost, 'purchase_method': 'purchase',
+            'supplier_taxes_id': [(6, 0, purchase_tax.ids)],
+            'seller_ids': [(0, 0, {'partner_id': seller.id, 'price': price, 'min_qty': 0.0})],
+        }
+        if uom.get(unit):
+            vals['uom_id'] = uom[unit].id
+        return env['product.product'].create(vals)
+
+    p_c35 = product('Ready-mix concrete C35 (SRC)', 'm3', 300.0, concrete_v, 305.0)
+    p_c15 = product('Ready-mix concrete C15 blinding', 'm3', 215.0, concrete_v, 250.0)
+    p_rebar = product('Reinforcement steel bars Grade 60', 'ton', 2650.0, steel_v, 2650.0)
+    p_block = product('Hollow concrete block 200 mm', 'nr', 3.2, block_v, 3.2)
+    p_gypsum = product('Gypsum board 12.5 mm, moisture resistant', 'm2', 28.0, fitout_v, 28.0)
+
+    def boq(contract, item):
+        return contract.line_ids.filtered(lambda l: l.item_no == item)[:1]
+
+    MR = env['dvz.material.request']
+
+    def request(contract, lines, required, location, stop='ordered', bill=False):
+        mr = MR.create({
+            'contract_id': contract.id,
+            'date': today - timedelta(days=30) if stop == 'ordered' else today,
+            'date_required': required,
+            'location': location,
+            'line_ids': [(0, 0, {
+                'contract_line_id': boq(contract, item).id,
+                'product_id': prod.id,
+                'quantity': qty,
+                'vendor_id': prod.seller_ids[:1].partner_id.id,
+                'price_unit': prod.seller_ids[:1].price,
+            }) for item, prod, qty in lines],
+        })
+        if stop == 'draft':
+            return mr
+        mr.action_submit()
+        if stop == 'submitted':
+            return mr
+        mr.action_approve()
+        mr.action_create_rfq()
+        for order in mr.purchase_ids:
+            order.button_confirm()
+            if bill:
+                order.action_create_invoice()
+                for move in order.invoice_ids.filtered(lambda m: m.state == 'draft'):
+                    move.invoice_date = today - timedelta(days=10)
+                    _try_post(move)
+        return mr
+
+    # 1. rebar: ordered and billed (actual cost)
+    request(c1, [('B.04', p_rebar, 220)], today - timedelta(days=20), 'Villas 1-12, ground beams', bill=True)
+    # 2. concrete: ordered, not billed yet (committed cost)
+    request(c1, [('B.02', p_c35, 900)], today + timedelta(days=5), 'Villas 13-24, foundations')
+    # 3. blinding: price went up, takes the BOQ item over budget (red line in Budget vs Actual)
+    request(c1, [('B.01', p_c15, 340)], today + timedelta(days=3), 'All villas, blinding')
+    # 4. blocks: waiting for approval (approve it live)
+    request(c1, [('C.01', p_block, 30000)], today + timedelta(days=14), 'Villas 1-6, ground floor walls',
+            stop='submitted')
+    # 5. fit-out gypsum board: draft request
+    request(c2, [('F.01', p_gypsum, 3800)], today + timedelta(days=21), 'Floor 13, partitions', stop='draft')
+
+
+# ---------------------------------------------------------------------- portal
+def _dvz_demo_portal(env, c1, c2):
+    Partner = env['res.partner']
+    firm = Partner.create({'name': 'Al Rowad Engineering Consultants (Demo)', 'is_company': True, 'city': 'Riyadh',
+                           'country_id': (_ref(env, 'base.sa') or Partner).id})
+    consultant = Partner.create({'name': 'Eng. Faisal Al-Harbi', 'parent_id': firm.id,
+                                 'email': 'consultant@demo.com', 'function': 'Resident Engineer'})
+    portal_group = _ref(env, 'base.group_portal')
+    Users = env['res.users'].with_context(no_reset_password=True, mail_create_nosubscribe=True)
+    login = 'consultant@demo.com'
+    if portal_group and not Users.search([('login', '=', login)], limit=1):
+        groups_field = 'group_ids' if 'group_ids' in Users._fields else 'groups_id'
+        try:
+            with env.cr.savepoint():
+                Users.create({'name': consultant.name, 'login': login, 'password': 'consultant',
+                              'partner_id': consultant.id, groups_field: [(6, 0, [portal_group.id])]})
+        except Exception as e:
+            _logger.info('Demo: portal user not created (%s)', e)
+    (c1 | c2).write({'consultant_ids': [(4, consultant.id)]})
+    certs = (c1 | c2).certificate_ids.filtered(lambda c: c.state == 'submitted')
+    variations = (c1 | c2).variation_ids.filtered(lambda v: v.state == 'submitted')
+    certs._dvz_portal_notify()
+    variations._dvz_portal_notify()

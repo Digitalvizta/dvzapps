@@ -1,0 +1,4 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dvz_cashflow_user,dvz.cashflow.line user,model_dvz_cashflow_line,dvz_contract.group_dvz_contract_user,1,0,0,0
+access_dvz_cashflow_manager,dvz.cashflow.line manager,model_dvz_cashflow_line,dvz_contract.group_dvz_contract_manager,1,1,1,1
+access_dvz_cashflow_account,dvz.cashflow.line accountant,model_dvz_cashflow_line,account.group_account_invoice,1,0,0,0

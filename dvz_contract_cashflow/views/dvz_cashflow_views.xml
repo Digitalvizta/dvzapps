@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_cashflow_line_view_list" model="ir.ui.view">
+        <field name="name">dvz.cashflow.line.list</field>
+        <field name="model">dvz.cashflow.line</field>
+        <field name="arch" type="xml">
+            <list string="Cash Flow Forecast" create="0" edit="0" delete="0"
+                  decoration-success="flow == 'in'" decoration-danger="flow == 'out'" decoration-it="is_planned">
+                <field name="date"/>
+                <field name="contract_id"/>
+                <field name="partner_id" optional="show"/>
+                <field name="category"/>
+                <field name="name"/>
+                <field name="flow" column_invisible="True"/>
+                <field name="is_planned" optional="hide"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="amount_in" sum="Total"/>
+                <field name="amount_out" sum="Total"/>
+                <field name="amount" sum="Total"/>
+                <button name="action_open_document" type="object" icon="fa-external-link" title="Open document"
+                        invisible="not res_id"/>
+                <field name="res_id" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dvz_cashflow_line_view_pivot" model="ir.ui.view">
+        <field name="name">dvz.cashflow.line.pivot</field>
+        <field name="model">dvz.cashflow.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Cash Flow Forecast" sample="1">
+                <field name="flow" type="row"/>
+                <field name="category" type="row"/>
+                <field name="date" interval="month" type="col"/>
+                <field name="amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="dvz_cashflow_line_view_graph" model="ir.ui.view">
+        <field name="name">dvz.cashflow.line.graph</field>
+        <field name="model">dvz.cashflow.line</field>
+        <field name="arch" type="xml">
+            <graph string="Cash Flow Forecast" type="bar" sample="1">
+                <field name="date" interval="month"/>
+                <field name="flow"/>
+                <field name="amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="dvz_cashflow_line_view_search" model="ir.ui.view">
+        <field name="name">dvz.cashflow.line.search</field>
+        <field name="model">dvz.cashflow.line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="contract_id"/>
+                <field name="project_id"/>
+                <field name="partner_id"/>
+                <field name="name"/>
+                <filter name="cash_in" string="Cash In" domain="[('flow', '=', 'in')]"/>
+                <filter name="cash_out" string="Cash Out" domain="[('flow', '=', 'out')]"/>
+                <separator/>
+                <filter name="documents" string="From documents" domain="[('is_planned', '=', False)]"/>
+                <filter name="planned" string="Planned" domain="[('is_planned', '=', True)]"/>
+                <separator/>
+                <filter name="next_3_months" string="Next 3 months"
+                        domain="[('date', '&lt;', (context_today() + relativedelta(months=3)).strftime('%Y-%m-%d'))]"/>
+                <filter name="next_6_months" string="Next 6 months"
+                        domain="[('date', '&lt;', (context_today() + relativedelta(months=6)).strftime('%Y-%m-%d'))]"/>
+                <filter name="next_12_months" string="Next 12 months"
+                        domain="[('date', '&lt;', (context_today() + relativedelta(months=12)).strftime('%Y-%m-%d'))]"/>
+                <group>
+                    <filter name="group_contract" string="Contract" context="{'group_by': 'contract_id'}"/>
+                    <filter name="group_project" string="Project" context="{'group_by': 'project_id'}"/>
+                    <filter name="group_category" string="Category" context="{'group_by': 'category'}"/>
+                    <filter name="group_month" string="Month" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dvz_cashflow_line" model="ir.actions.act_window">
+        <field name="name">Cash Flow Forecast</field>
+        <field name="res_model">dvz.cashflow.line</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="search_view_id" ref="dvz_cashflow_line_view_search"/>
+        <field name="context">{'search_default_next_12_months': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No cash flow expected yet</p>
+            <p>The forecast is built from contracts in progress: open invoices, certificates, planned billing,
+               retention, subcontractors, purchase orders and the remaining cost budget.</p>
+        </field>
+    </record>
+
+    <record id="action_server_dvz_cashflow" model="ir.actions.server">
+        <field name="name">Cash Flow Forecast</field>
+        <field name="model_id" ref="model_dvz_cashflow_line"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_forecast()</field>
+    </record>
+
+    <menuitem id="menu_dvz_cashflow" name="Cash Flow Forecast" parent="dvz_contract.menu_dvz_reporting"
+              action="action_server_dvz_cashflow" sequence="5"/>
+</odoo>

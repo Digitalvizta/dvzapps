@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_contract_view_form_procurement" model="ir.ui.view">
+        <field name="name">dvz.contract.form.procurement</field>
+        <field name="model">dvz.contract</field>
+        <field name="inherit_id" ref="dvz_contract.dvz_contract_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_material_requests" type="object" class="oe_stat_button" icon="fa-truck"
+                        invisible="contract_type != 'client' or state == 'draft'">
+                    <field name="material_request_count" widget="statinfo" string="Material Req."/>
+                </button>
+                <button name="action_view_purchase_orders" type="object" class="oe_stat_button" icon="fa-shopping-cart"
+                        invisible="purchase_order_count == 0">
+                    <field name="purchase_order_count" widget="statinfo" string="Purchases"/>
+                </button>
+                <button name="action_view_budget_vs_actual" type="object" class="oe_stat_button text-danger"
+                        icon="fa-exclamation-triangle" invisible="over_budget_count == 0"
+                        groups="dvz_contract.group_dvz_show_cost">
+                    <field name="over_budget_count" widget="statinfo" string="Over Budget"/>
+                </button>
+            </xpath>
+            <xpath expr="//page[@name='cost_control']" position="after">
+                <page string="Budget vs Actual" name="budget_vs_actual" invisible="state == 'draft' or contract_type != 'client'"
+                      groups="dvz_contract.group_dvz_show_cost">
+                    <group>
+                        <group>
+                            <field name="cost_budget"/>
+                            <field name="procurement_ordered"/>
+                            <field name="procurement_billed"/>
+                        </group>
+                        <group>
+                            <field name="over_budget_count"/>
+                        </group>
+                    </group>
+                    <field name="budget_line_ids" readonly="1" nolabel="1">
+                        <list decoration-danger="over_budget"
+                              decoration-warning="not over_budget and budget_used_percent &gt;= 90">
+                            <field name="currency_id" column_invisible="True"/>
+                            <field name="over_budget" column_invisible="True"/>
+                            <field name="item_no"/>
+                            <field name="name"/>
+                            <field name="cost_subtotal" string="Cost Budget" sum="Total"/>
+                            <field name="cost_requested" sum="Total" optional="show"/>
+                            <field name="cost_committed" sum="Total"/>
+                            <field name="cost_received" sum="Total" optional="hide"/>
+                            <field name="cost_billed" sum="Total"/>
+                            <field name="budget_remaining" sum="Total"/>
+                            <field name="budget_used_percent" widget="progressbar"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

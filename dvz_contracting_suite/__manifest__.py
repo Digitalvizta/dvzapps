@@ -1,7 +1,8 @@
 {
     'name': 'Contracting Suite for Construction Companies',
-    'summary': 'All five DigitalVizta Contracting apps in one install: contracts & BOQ, progress billing, '
-               'retention & guarantees, variation orders and subcontractors.',
+    'summary': 'All DigitalVizta Contracting apps in one install: contracts & BOQ, progress billing, variations, '
+               'retention & guarantees, subcontractors, procurement & budget control, cash flow forecast, '
+               'consultant portal and management dashboard.',
     'description': 'Install the complete DigitalVizta Contracting Suite in one step.',
     'version': '19.0.1.0.0',
     'category': 'Services/Contracting',
@@ -15,11 +16,15 @@
         'dvz_contract_retention',
         'dvz_contract_variation',
         'dvz_contract_subcontract',
+        'dvz_contract_procurement',
+        'dvz_contract_cashflow',
+        'dvz_contract_portal',
+        'dvz_contract_dashboard',
     ],
     'data': [],
     'application': True,
     'images': ['static/description/banner.png'],
     'installable': True,
-    'price': 349.0,
+    'price': 549.0,
     'currency': 'USD',
 }

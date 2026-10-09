@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_material_request_view_list" model="ir.ui.view">
+        <field name="name">dvz.material.request.list</field>
+        <field name="model">dvz.material.request</field>
+        <field name="arch" type="xml">
+            <list string="Material Requests" decoration-muted="state == 'cancel'" decoration-info="state == 'submitted'">
+                <field name="name"/>
+                <field name="contract_id"/>
+                <field name="project_id" optional="show"/>
+                <field name="date"/>
+                <field name="date_required" optional="show"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="amount_estimated" sum="Total"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="over_budget" widget="boolean" optional="show"/>
+                <field name="state" widget="badge" decoration-info="state == 'submitted'"
+                       decoration-success="state in ('approved', 'ordered')" decoration-muted="state == 'cancel'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dvz_material_request_view_form" model="ir.ui.view">
+        <field name="name">dvz.material.request.form</field>
+        <field name="model">dvz.material.request</field>
+        <field name="arch" type="xml">
+            <form string="Material Request">
+                <header>
+                    <button name="action_submit" string="Submit" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_approve" string="Approve" type="object" class="oe_highlight" invisible="state != 'submitted'"
+                            groups="dvz_contract.group_dvz_contract_manager"/>
+                    <button name="action_create_rfq" string="Create RFQs" type="object" class="oe_highlight" invisible="state != 'approved'"/>
+                    <button name="action_draft" string="Back to Draft" type="object" invisible="state not in ('submitted', 'cancel')"/>
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state in ('cancel', 'ordered')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,approved,ordered"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_purchases" type="object" class="oe_stat_button" icon="fa-shopping-cart"
+                                invisible="purchase_count == 0">
+                            <field name="purchase_count" widget="statinfo" string="Purchases"/>
+                        </button>
+                    </div>
+                    <div class="alert alert-warning mb-2" role="alert" invisible="not over_budget">
+                        Some materials take their BOQ item over the cost budget.
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="contract_id" readonly="state != 'draft'" options="{'no_create': True}"/>
+                            <field name="project_id"/>
+                            <field name="location"/>
+                        </group>
+                        <group>
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="date_required"/>
+                            <field name="user_id"/>
+                            <field name="approved_by_id" invisible="not approved_by_id"/>
+                            <field name="approved_date" invisible="not approved_date"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Materials" name="materials">
+                            <field name="line_ids" readonly="state not in ('draft', 'submitted', 'approved')">
+                                <list editable="bottom" decoration-danger="over_budget">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="contract_id" column_invisible="True"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="over_budget" column_invisible="True"/>
+                                    <field name="contract_line_id" options="{'no_create': True}"/>
+                                    <field name="product_id"/>
+                                    <field name="name" optional="show"/>
+                                    <field name="quantity"/>
+                                    <field name="uom_id" optional="show"/>
+                                    <field name="price_unit"/>
+                                    <field name="subtotal" sum="Total"/>
+                                    <field name="budget_remaining" optional="show" groups="dvz_contract.group_dvz_show_cost"/>
+                                    <field name="vendor_id" optional="show"/>
+                                    <field name="purchase_id" optional="show" readonly="1"/>
+                                    <field name="qty_received" optional="hide"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer">
+                                <field name="amount_estimated"/>
+                            </group>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="dvz_material_request_view_search" model="ir.ui.view">
+        <field name="name">dvz.material.request.search</field>
+        <field name="model">dvz.material.request</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="contract_id"/>
+                <field name="project_id"/>
+                <field name="user_id"/>
+                <filter name="to_approve" string="To Approve" domain="[('state', '=', 'submitted')]"/>
+                <filter name="approved" string="Approved, not ordered" domain="[('state', '=', 'approved')]"/>
+                <filter name="ordered" string="Ordered" domain="[('state', '=', 'ordered')]"/>
+                <separator/>
+                <filter name="my" string="My Requests" domain="[('user_id', '=', uid)]"/>
+                <group>
+                    <filter name="group_contract" string="Contract" context="{'group_by': 'contract_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dvz_material_request" model="ir.actions.act_window">
+        <field name="name">Material Requests</field>
+        <field name="res_model">dvz.material.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Request materials for a contract</p>
+            <p>Site teams request materials against BOQ items. Approved requests become RFQs in one click.</p>
+        </field>
+    </record>
+
+    <!-- Budget vs actual per BOQ item -->
+    <record id="dvz_contract_line_view_list_budget" model="ir.ui.view">
+        <field name="name">dvz.contract.line.list.budget</field>
+        <field name="model">dvz.contract.line</field>
+        <field name="priority">30</field>
+        <field name="arch" type="xml">
+            <list string="Budget vs Actual" create="0" edit="0" delete="0" decoration-danger="over_budget"
+                  decoration-warning="not over_budget and budget_used_percent &gt;= 90">
+                <field name="contract_id"/>
+                <field name="item_no"/>
+                <field name="name"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="over_budget" column_invisible="True"/>
+                <field name="cost_subtotal" string="Cost Budget" sum="Total"/>
+                <field name="cost_requested" sum="Total" optional="show"/>
+                <field name="cost_committed" sum="Total"/>
+                <field name="cost_received" sum="Total" optional="show"/>
+                <field name="cost_billed" sum="Total"/>
+                <field name="budget_remaining" sum="Total"/>
+                <field name="budget_used_percent" widget="progressbar"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dvz_contract_line_view_pivot_budget" model="ir.ui.view">
+        <field name="name">dvz.contract.line.pivot.budget</field>
+        <field name="model">dvz.contract.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Budget vs Actual" sample="1">
+                <field name="contract_id" type="row"/>
+                <field name="cost_subtotal" type="measure" string="Cost Budget"/>
+                <field name="cost_committed" type="measure"/>
+                <field name="cost_billed" type="measure"/>
+                <field name="budget_remaining" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="dvz_contract_line_view_graph_budget" model="ir.ui.view">
+        <field name="name">dvz.contract.line.graph.budget</field>
+        <field name="model">dvz.contract.line</field>
+        <field name="arch" type="xml">
+            <graph string="Budget vs Actual" type="bar" sample="1">
+                <field name="contract_id"/>
+                <field name="cost_committed" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="dvz_contract_line_view_search_budget" model="ir.ui.view">
+        <field name="name">dvz.contract.line.search.budget</field>
+        <field name="model">dvz.contract.line</field>
+        <field name="priority">30</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="contract_id"/>
+                <field name="item_no"/>
+                <field name="name"/>
+                <filter name="over_budget" string="Over Budget" domain="[('over_budget', '=', True)]"/>
+                <filter name="near_budget" string="90% or more used" domain="[('budget_used_percent', '&gt;=', 90)]"/>
+                <filter name="with_purchases" string="With Purchases" domain="[('cost_committed', '&gt;', 0)]"/>
+                <group>
+                    <filter name="group_contract" string="Contract" context="{'group_by': 'contract_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dvz_budget_vs_actual" model="ir.actions.act_window">
+        <field name="name">Budget vs Actual</field>
+        <field name="res_model">dvz.contract.line</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="domain">[('display_type', '=', False), ('contract_id.contract_type', '=', 'client')]</field>
+        <field name="search_view_id" ref="dvz_contract_line_view_search_budget"/>
+        <field name="context">{'search_default_group_contract': 1}</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('dvz_contract_line_view_list_budget')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('dvz_contract_line_view_pivot_budget')}),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('dvz_contract_line_view_graph_budget')})]"/>
+    </record>
+</odoo>

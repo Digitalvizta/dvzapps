@@ -8,8 +8,8 @@
     'author': 'DigitalVizta',
     'website': 'https://digitalvizta.net',
     'license': 'OPL-1',
-    'depends': ['dvz_contracting_suite'],
+    'depends': ['dvz_contracting_suite', 'l10n_sa'],
     'data': [],
-    'post_init_hook': '_dvz_load_demo',
+    'post_init_hook': '_dvz_post_init',
     'installable': True,
 }
