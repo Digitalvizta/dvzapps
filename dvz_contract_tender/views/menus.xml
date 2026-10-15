@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_dvz_tenders_root" name="Tenders" parent="dvz_contract.menu_dvz_contracting_root" sequence="5"
+              groups="sales_team.group_sale_salesman"/>
+    <menuitem id="menu_dvz_pipeline" name="Pipeline" parent="menu_dvz_tenders_root"
+              action="crm.crm_lead_action_pipeline" sequence="10"/>
+    <menuitem id="menu_dvz_tenders" name="Tenders" parent="menu_dvz_tenders_root"
+              action="action_dvz_tender" sequence="20"/>
+    <menuitem id="menu_dvz_tender_analysis" name="Tender Analysis" parent="dvz_contract.menu_dvz_reporting"
+              action="action_dvz_tender_analysis" sequence="2" groups="sales_team.group_sale_salesman"/>
+</odoo>

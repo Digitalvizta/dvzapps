@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_dvz_site_stores" name="Site Stores" parent="dvz_contract.menu_dvz_contracting_root"
+              sequence="27" groups="dvz_contract_stock.group_dvz_site_stores"/>
+    <menuitem id="menu_dvz_site_stock" name="Stock on Sites" parent="menu_dvz_site_stores"
+              action="action_dvz_site_stock" sequence="10"/>
+    <menuitem id="menu_dvz_site_transfers" name="Site Transfers" parent="menu_dvz_site_stores"
+              action="action_dvz_site_transfers" sequence="20" groups="dvz_contract_stock.group_dvz_site_transfer"/>
+    <menuitem id="menu_dvz_material_usage" name="Material Used" parent="menu_dvz_site_stores"
+              action="action_dvz_material_usage" sequence="30" groups="dvz_contract_stock.group_dvz_material_usage"/>
+    <menuitem id="menu_dvz_material_usage_analysis" name="Material Used per BOQ Item"
+              parent="dvz_contract.menu_dvz_reporting" action="action_dvz_material_usage_analysis" sequence="20"
+              groups="dvz_contract_stock.group_dvz_material_usage"/>
+</odoo>

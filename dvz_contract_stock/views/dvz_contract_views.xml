@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_contract_view_form_site_store" model="ir.ui.view">
+        <field name="name">dvz.contract.form.site.store</field>
+        <field name="model">dvz.contract</field>
+        <field name="inherit_id" ref="dvz_contract.dvz_contract_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="dvz_site_stores_on" invisible="1"/>
+                <button name="action_dvz_create_site_store" string="Create Site Store" type="object"
+                        groups="dvz_contract.group_dvz_contract_manager"
+                        invisible="not dvz_site_stores_on or site_location_id or contract_type != 'client' or state not in ('progress', 'handover')"/>
+                <button name="action_dvz_new_site_transfer" string="Transfer Material" type="object"
+                        groups="dvz_contract_stock.group_dvz_site_transfer,stock.group_stock_user"
+                        invisible="not dvz_site_stores_on or not site_location_id or state not in ('progress', 'handover')"/>
+                <button name="action_dvz_return_leftovers" string="Return Leftovers to Store" type="object"
+                        groups="dvz_contract_stock.group_dvz_site_transfer"
+                        invisible="not dvz_site_stores_on or not site_location_id or state not in ('progress', 'handover', 'closed')"
+                        confirm="Prepare one transfer that returns all material left on this site to the main store?"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_dvz_view_site_stock" type="object" class="oe_stat_button" icon="fa-cubes"
+                        groups="dvz_contract_stock.group_dvz_site_stores" invisible="not site_location_id">
+                    <field name="site_quant_count" widget="statinfo" string="On Site"/>
+                </button>
+                <button name="action_dvz_view_site_transfers" type="object" class="oe_stat_button" icon="fa-exchange"
+                        groups="dvz_contract_stock.group_dvz_site_stores" invisible="not site_location_id">
+                    <field name="site_transfer_count" widget="statinfo" string="Site Transfers"/>
+                </button>
+                <button name="action_dvz_view_usage" type="object" class="oe_stat_button" icon="fa-wrench"
+                        groups="dvz_contract_stock.group_dvz_material_usage" invisible="contract_type != 'client'">
+                    <field name="usage_count" widget="statinfo" string="Material Used"/>
+                </button>
+            </xpath>
+            <xpath expr="//page[@name='cost_control']" position="after">
+                <page string="Site Store" name="site_store" groups="dvz_contract_stock.group_dvz_site_stores"
+                      invisible="contract_type != 'client' or state == 'draft'">
+                    <group>
+                        <group>
+                            <field name="site_location_id"/>
+                            <field name="site_stock_value" groups="dvz_contract.group_dvz_show_cost"/>
+                        </group>
+                        <group groups="dvz_contract.group_dvz_show_cost">
+                            <field name="material_used_cost"/>
+                            <field name="material_waste_cost"/>
+                        </group>
+                    </group>
+                    <div class="text-muted" invisible="site_location_id">
+                        No site store yet. It is created when the contract is confirmed, or with "Create Site Store".
+                    </div>
+                    <field name="budget_line_ids" readonly="1" nolabel="1" groups="dvz_contract.group_dvz_show_cost"
+                           invisible="not site_location_id">
+                        <list>
+                            <field name="currency_id" column_invisible="True"/>
+                            <field name="item_no"/>
+                            <field name="name"/>
+                            <field name="cost_subtotal" string="Cost Budget" sum="Total"/>
+                            <field name="cost_committed" string="Ordered" sum="Total"/>
+                            <field name="material_used_cost" sum="Total"/>
+                            <field name="material_waste_cost" sum="Total"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

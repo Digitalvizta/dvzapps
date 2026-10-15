@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tender list -->
+    <record id="dvz_tender_view_list" model="ir.ui.view">
+        <field name="name">sale.order.list.dvz.tender</field>
+        <field name="model">sale.order</field>
+        <field name="priority">40</field>
+        <field name="arch" type="xml">
+            <list string="Tenders" decoration-muted="dvz_tender_status in ('superseded', 'cancel', 'lost')"
+                  decoration-success="dvz_tender_status == 'won'" decoration-info="dvz_tender_status == 'submitted'">
+                <field name="name"/>
+                <field name="dvz_revision_label" string="Rev."/>
+                <field name="dvz_project_title"/>
+                <field name="partner_id"/>
+                <field name="opportunity_id" optional="show"/>
+                <field name="dvz_closing_date" optional="show"/>
+                <field name="dvz_submitted_date" optional="show"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="amount_untaxed" sum="Total" string="Value (excl. VAT)"/>
+                <field name="dvz_margin_percent" optional="show" groups="dvz_contract.group_dvz_show_cost"/>
+                <field name="dvz_tender_status" widget="badge"
+                       decoration-info="dvz_tender_status == 'submitted'" decoration-success="dvz_tender_status == 'won'"
+                       decoration-danger="dvz_tender_status == 'lost'" decoration-muted="dvz_tender_status in ('superseded', 'cancel')"/>
+                <field name="dvz_contract_id" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Tender form: the standard quotation form, turned into a BOQ tender -->
+    <record id="dvz_tender_view_form" model="ir.ui.view">
+        <field name="name">sale.order.form.dvz.tender</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="mode">primary</field>
+        <field name="priority">40</field>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="dvz_is_tender" invisible="1"/>
+                <field name="dvz_superseded" invisible="1"/>
+                <field name="dvz_lost" invisible="1"/>
+                <field name="dvz_contract_id" invisible="1"/>
+                <field name="dvz_boq_product_id" invisible="1"/>
+                <button name="action_dvz_calculate_rates" string="Calculate Rates" type="object"
+                        invisible="state not in ('draft', 'sent') or dvz_superseded"
+                        help="Rate = direct cost + overhead % + profit %"/>
+                <button name="action_dvz_new_revision" string="New Revision" type="object"
+                        invisible="state not in ('draft', 'sent') or dvz_superseded"/>
+                <button name="action_dvz_bid_bond" string="Bid Bond" type="object"
+                        invisible="state not in ('draft', 'sent') or dvz_superseded"/>
+                <button name="action_dvz_mark_lost" string="Mark as Lost" type="object"
+                        invisible="state not in ('draft', 'sent') or dvz_superseded"/>
+                <button name="action_dvz_create_contract" string="Create Contract" type="object" class="btn-primary"
+                        invisible="state != 'sale' or dvz_contract_id"/>
+            </xpath>
+            <xpath expr="//button[@id='create_invoice']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//button[@id='create_invoice_percentage']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_confirm'][1]" position="attributes">
+                <attribute name="string">Mark as Won</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_confirm'][2]" position="attributes">
+                <attribute name="string">Mark as Won</attribute>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_dvz_view_revisions" type="object" class="oe_stat_button" icon="fa-history"
+                        invisible="dvz_revision_count &lt; 2">
+                    <field name="dvz_revision_count" widget="statinfo" string="Revisions"/>
+                </button>
+                <button name="action_dvz_compare_revisions" type="object" class="oe_stat_button" icon="fa-columns"
+                        invisible="dvz_revision_count &lt; 2">
+                    <div class="o_stat_info"><span class="o_stat_text">Compare</span></div>
+                </button>
+                <button name="action_dvz_view_bid_bonds" type="object" class="oe_stat_button" icon="fa-university"
+                        invisible="dvz_bid_bond_count == 0">
+                    <field name="dvz_bid_bond_count" widget="statinfo" string="Bid Bonds"/>
+                </button>
+                <button name="action_dvz_view_contract" type="object" class="oe_stat_button" icon="fa-file-text"
+                        invisible="not dvz_contract_id">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Contract</span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="after">
+                <widget name="web_ribbon" title="Superseded" bg_color="text-bg-secondary" invisible="not dvz_superseded"/>
+                <widget name="web_ribbon" title="Lost" bg_color="text-bg-danger" invisible="not dvz_lost"/>
+                <widget name="web_ribbon" title="Won" bg_color="text-bg-success" invisible="state != 'sale'"/>
+            </xpath>
+            <xpath expr="//div[hasclass('oe_title')]" position="inside">
+                <div class="d-flex gap-2 align-items-center">
+                    <span class="badge text-bg-primary fs-6"><field name="dvz_revision_label" readonly="1"/></span>
+                    <field name="dvz_project_title" placeholder="Tender / project title, e.g. Al Yasmin Commercial Building"
+                           class="fs-5" readonly="state not in ('draft', 'sent')"/>
+                </div>
+            </xpath>
+            <xpath expr="//group[@name='sale_header']" position="after">
+                <group name="dvz_tender_header">
+                    <group>
+                        <field name="dvz_closing_date" readonly="state not in ('draft', 'sent')"/>
+                        <field name="dvz_submitted_date" invisible="not dvz_submitted_date"/>
+                        <field name="dvz_revision_reason" invisible="dvz_revision_label == 'R0'"
+                               placeholder="e.g. Client asked 5% discount on concrete"/>
+                    </group>
+                    <group>
+                        <field name="dvz_tender_status" widget="badge"/>
+                        <field name="dvz_lost_reason_id" invisible="not dvz_lost"/>
+                        <field name="dvz_lost_note" invisible="not dvz_lost"/>
+                        <field name="dvz_contract_id" invisible="not dvz_contract_id" readonly="1"/>
+                    </group>
+                </group>
+            </xpath>
+            <xpath expr="//field[@name='order_line']" position="replace">
+                <field name="order_line" widget="section_and_note_one2many" mode="list"
+                       readonly="state in ('cancel', 'sale') or locked">
+                    <list string="Bill of Quantities" editable="bottom" limit="500">
+                        <control>
+                            <create name="add_item_control" string="Add a BOQ item"/>
+                            <create name="add_section_control" string="Add a section" context="{'default_display_type': 'line_section'}"/>
+                            <create name="add_note_control" string="Add a note" context="{'default_display_type': 'line_note'}"/>
+                        </control>
+                        <field name="sequence" widget="handle"/>
+                        <field name="display_type" column_invisible="True"/>
+                        <field name="is_downpayment" column_invisible="True"/>
+                        <field name="currency_id" column_invisible="True"/>
+                        <field name="company_id" column_invisible="True"/>
+                        <field name="state" column_invisible="True"/>
+                        <field name="qty_invoiced" column_invisible="True"/>
+                        <field name="technical_price_unit" column_invisible="True"/>
+                        <field name="product_id" column_invisible="True" force_save="1"/>
+                        <field name="product_uom_id" column_invisible="True" force_save="1"/>
+                        <field name="dvz_item_no" width="80px"/>
+                        <field name="name" widget="section_and_note_text"/>
+                        <field name="dvz_uom_id" width="70px" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="product_uom_qty" string="Qty"/>
+                        <field name="dvz_cost_material" optional="hide" groups="dvz_contract.group_dvz_show_cost"/>
+                        <field name="dvz_cost_labour" optional="hide" groups="dvz_contract.group_dvz_show_cost"/>
+                        <field name="dvz_cost_equipment" optional="hide" groups="dvz_contract.group_dvz_show_cost"/>
+                        <field name="dvz_cost_subcontract" optional="hide" groups="dvz_contract.group_dvz_show_cost"/>
+                        <field name="dvz_cost_unit" optional="show" groups="dvz_contract.group_dvz_show_cost"/>
+                        <field name="dvz_rate_calc" optional="hide" groups="dvz_contract.group_dvz_show_cost"/>
+                        <field name="price_unit" string="Rate"/>
+                        <field name="discount" string="Disc.%" optional="hide" groups="sale.group_discount_per_so_line"/>
+                        <field name="tax_ids" widget="many2many_tax_tags" optional="hide" options="{'no_create': True}"/>
+                        <field name="price_subtotal" string="Amount"/>
+                        <field name="dvz_cost_subtotal" optional="hide" groups="dvz_contract.group_dvz_show_cost"/>
+                    </list>
+                </field>
+                <group class="mt-2" groups="dvz_contract.group_dvz_show_cost">
+                    <group string="Estimate (internal)">
+                        <field name="dvz_cost_total"/>
+                        <field name="dvz_margin_total"/>
+                        <label for="dvz_margin_percent" string="Margin %"/>
+                        <div><field name="dvz_margin_percent" nolabel="1" class="oe_inline" digits="[16, 1]"/> %</div>
+                    </group>
+                </group>
+            </xpath>
+            <xpath expr="//page[@name='order_lines']" position="attributes">
+                <attribute name="string">Bill of Quantities</attribute>
+            </xpath>
+            <xpath expr="//page[@name='order_lines']" position="after">
+                <page string="Commercial Terms" name="dvz_terms">
+                    <group>
+                        <group string="Payment Terms (copied to the contract)">
+                            <field name="dvz_retention_percent"/>
+                            <field name="dvz_advance_percent"/>
+                            <field name="dvz_advance_recovery_percent"/>
+                            <field name="dvz_defects_months"/>
+                        </group>
+                        <group string="Programme">
+                            <field name="dvz_date_start"/>
+                            <field name="dvz_duration_months"/>
+                        </group>
+                        <group string="Pricing (internal)" groups="dvz_contract.group_dvz_show_cost">
+                            <field name="dvz_overhead_percent"/>
+                            <field name="dvz_profit_percent"/>
+                        </group>
+                    </group>
+                </page>
+                <page string="Scope &amp; Exclusions" name="dvz_scope">
+                    <group string="Scope &amp; Inclusions">
+                        <field name="dvz_scope" nolabel="1" colspan="2"/>
+                    </group>
+                    <group string="Exclusions &amp; Assumptions">
+                        <field name="dvz_exclusions" nolabel="1" colspan="2"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="dvz_tender_view_search" model="ir.ui.view">
+        <field name="name">sale.order.search.dvz.tender</field>
+        <field name="model">sale.order</field>
+        <field name="priority">40</field>
+        <field name="arch" type="xml">
+            <search string="Tenders">
+                <field name="name"/>
+                <field name="dvz_project_title"/>
+                <field name="partner_id" operator="child_of"/>
+                <field name="opportunity_id"/>
+                <field name="user_id"/>
+                <filter name="current" string="Current Revisions" domain="[('dvz_superseded', '=', False)]"/>
+                <separator/>
+                <filter name="draft" string="Draft" domain="[('dvz_tender_status', '=', 'draft')]"/>
+                <filter name="submitted" string="Submitted" domain="[('dvz_tender_status', '=', 'submitted')]"/>
+                <filter name="won" string="Won" domain="[('dvz_tender_status', '=', 'won')]"/>
+                <filter name="lost" string="Lost" domain="[('dvz_tender_status', '=', 'lost')]"/>
+                <separator/>
+                <filter name="my" string="My Tenders" domain="[('user_id', '=', uid)]"/>
+                <filter name="closing" string="Closing Date" date="dvz_closing_date"/>
+                <group>
+                    <filter name="group_status" string="Status" context="{'group_by': 'dvz_tender_status'}"/>
+                    <filter name="group_partner" string="Client" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_user" string="Salesperson" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_lost_reason" string="Lost Reason" context="{'group_by': 'dvz_lost_reason_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="dvz_tender_view_pivot" model="ir.ui.view">
+        <field name="name">sale.order.pivot.dvz.tender</field>
+        <field name="model">sale.order</field>
+        <field name="priority">40</field>
+        <field name="arch" type="xml">
+            <pivot string="Tender Analysis" sample="1">
+                <field name="dvz_tender_status" type="col"/>
+                <field name="partner_id" type="row"/>
+                <field name="amount_untaxed" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="dvz_tender_view_graph" model="ir.ui.view">
+        <field name="name">sale.order.graph.dvz.tender</field>
+        <field name="model">sale.order</field>
+        <field name="priority">40</field>
+        <field name="arch" type="xml">
+            <graph string="Tender Analysis" type="bar" sample="1">
+                <field name="dvz_tender_status"/>
+                <field name="amount_untaxed" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_dvz_tender" model="ir.actions.act_window">
+        <field name="name">Tenders</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="domain">[('dvz_is_tender', '=', True)]</field>
+        <field name="context">{'default_dvz_is_tender': True, 'default_require_signature': True, 'search_default_current': 1}</field>
+        <field name="search_view_id" ref="dvz_tender_view_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('dvz_tender_view_list')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('dvz_tender_view_form')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('dvz_tender_view_pivot')}),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('dvz_tender_view_graph')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first tender</p>
+            <p>Price the client's BOQ, send the tender offer, keep every revision, and turn the winning one into a contract.</p>
+        </field>
+    </record>
+
+    <record id="action_dvz_tender_analysis" model="ir.actions.act_window">
+        <field name="name">Tender Analysis</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="domain">[('dvz_is_tender', '=', True), ('dvz_superseded', '=', False)]</field>
+        <field name="search_view_id" ref="dvz_tender_view_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('dvz_tender_view_pivot')}),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('dvz_tender_view_graph')}),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('dvz_tender_view_list')})]"/>
+    </record>
+
+    <!-- Compare revisions: rates per BOQ item side by side -->
+    <record id="dvz_tender_line_view_pivot_compare" model="ir.ui.view">
+        <field name="name">sale.order.line.pivot.dvz.compare</field>
+        <field name="model">sale.order.line</field>
+        <field name="priority">40</field>
+        <field name="arch" type="xml">
+            <pivot string="Compare Revisions">
+                <field name="dvz_item_no" type="row"/>
+                <field name="order_id" type="col"/>
+                <field name="price_subtotal" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="dvz_tender_line_view_list_compare" model="ir.ui.view">
+        <field name="name">sale.order.line.list.dvz.compare</field>
+        <field name="model">sale.order.line</field>
+        <field name="priority">40</field>
+        <field name="arch" type="xml">
+            <list string="Compare Revisions" create="0" edit="0" delete="0" default_group_by="dvz_item_no">
+                <field name="order_id"/>
+                <field name="dvz_item_no"/>
+                <field name="name"/>
+                <field name="product_uom_qty" string="Qty"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="price_unit" string="Rate"/>
+                <field name="price_subtotal" string="Amount"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_dvz_tender_compare" model="ir.actions.act_window">
+        <field name="name">Compare Revisions</field>
+        <field name="res_model">sale.order.line</field>
+        <field name="view_mode">pivot,list</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('dvz_tender_line_view_pivot_compare')}),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('dvz_tender_line_view_list_compare')})]"/>
+    </record>
+
+</odoo>

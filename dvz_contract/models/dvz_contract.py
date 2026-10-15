@@ -209,7 +209,10 @@ class DvzContract(models.Model):
     def _get_or_create_analytic_account(self):
         self.ensure_one()
         if self.project_id and self.project_id.account_id:
-            return self.project_id.account_id
+            used = self.search_count([('id', '!=', self.id), ('contract_type', '=', 'client'),
+                                      ('analytic_account_id', '=', self.project_id.account_id.id)])
+            if not used:
+                return self.project_id.account_id
         plan = self.company_id.dvz_analytic_plan_id
         if not plan:
             plan, _others = self.env['account.analytic.plan']._get_all_plans()

@@ -1,10 +1,10 @@
 {
     'name': 'Contracting Suite for Construction Companies',
-    'summary': 'All DigitalVizta Contracting apps in one install: contracts & BOQ, progress billing, variations, '
+    'summary': 'All DigitalVizta Contracting apps in one install: tendering & estimation, contracts & BOQ, progress billing, variations, '
                'retention & guarantees, subcontractors, procurement & budget control, cash flow forecast, '
                'consultant portal and management dashboard.',
     'description': 'Install the complete DigitalVizta Contracting Suite in one step.',
-    'version': '19.0.1.0.0',
+    'version': '19.0.1.2.0',
     'category': 'Services/Contracting',
     'author': 'DigitalVizta',
     'website': 'https://digitalvizta.net',
@@ -20,6 +20,7 @@
         'dvz_contract_cashflow',
         'dvz_contract_portal',
         'dvz_contract_dashboard',
+        'dvz_contract_tender',
     ],
     'data': [],
     'application': True,

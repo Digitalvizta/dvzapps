@@ -1,0 +1,10 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dvz_usage_user,dvz.material.usage user,model_dvz_material_usage,dvz_contract.group_dvz_contract_user,1,1,1,0
+access_dvz_usage_manager,dvz.material.usage manager,model_dvz_material_usage,dvz_contract.group_dvz_contract_manager,1,1,1,1
+access_dvz_usage_line_user,dvz.material.usage.line user,model_dvz_material_usage_line,dvz_contract.group_dvz_contract_user,1,1,1,1
+access_dvz_usage_stock,dvz.material.usage stock,model_dvz_material_usage,stock.group_stock_user,1,0,0,0
+access_dvz_usage_line_stock,dvz.material.usage.line stock,model_dvz_material_usage_line,stock.group_stock_user,1,0,0,0
+access_dvz_stock_location_contract,stock.location contracting,stock.model_stock_location,dvz_contract.group_dvz_contract_user,1,0,0,0
+access_dvz_stock_quant_contract,stock.quant contracting,stock.model_stock_quant,dvz_contract.group_dvz_contract_user,1,0,0,0
+access_dvz_stock_move_contract,stock.move contracting,stock.model_stock_move,dvz_contract.group_dvz_contract_user,1,0,0,0
+access_dvz_stock_picking_contract,stock.picking contracting,stock.model_stock_picking,dvz_contract.group_dvz_contract_user,1,0,0,0

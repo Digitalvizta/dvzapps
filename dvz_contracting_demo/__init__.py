@@ -421,6 +421,7 @@ def _dvz_load_demo(env):
     _dvz_demo_portal(env, c1, c2)
     env['dvz.contract']._cron_dlp_reminders()
     env['dvz.bank.guarantee']._cron_guarantee_reminders()
+    _dvz_demo_tenders(env, company, today, uom)
     env['dvz.cashflow.line']._rebuild(company)
     _logger.info('DigitalVizta Contracting demo data loaded.')
 
@@ -528,3 +529,159 @@ def _dvz_demo_portal(env, c1, c2):
     variations = (c1 | c2).variation_ids.filtered(lambda v: v.state == 'submitted')
     certs._dvz_portal_notify()
     variations._dvz_portal_notify()
+
+
+# ---------------------------------------------------------------------- upgrade of an existing demo database
+def _dvz_load_extras(env):
+    """Add the procurement, portal and cash flow demo to a database where the demo was installed
+    before those modules existed. Safe to run more than once."""
+    admin = _ref(env, 'base.user_admin')
+    for xmlid in ('purchase.group_purchase_manager', 'dvz_contract.group_dvz_contract_manager'):
+        group = _ref(env, xmlid)
+        if group and admin:
+            admin.write({'group_ids': [(4, group.id)]}) if 'group_ids' in admin._fields else \
+                admin.write({'groups_id': [(4, group.id)]})
+    if admin:
+        env = env(user=admin.id, su=True)
+    company = env.company
+    today = fields.Date.context_today(env['res.users'])
+    Contract = env['dvz.contract']
+    c1 = Contract.search([('title', '=', 'Structural and Civil Works - 24 Villas'),
+                          ('state', 'in', ('progress', 'handover'))], limit=1)
+    c2 = Contract.search([('title', '=', 'Office Fit-out Floors 12 to 15'),
+                          ('state', 'in', ('progress', 'handover'))], limit=1)
+    if not c1 or not c2:
+        _logger.warning('Demo extras: the demo contracts were not found, nothing added.')
+        return
+    company = c1.company_id
+    uom = {k: _ref(env, 'uom.product_uom_%s' % v) for k, v in {
+        'm3': 'cubic_meter', 'm2': 'square_meter', 'm': 'meter', 'ton': 'ton', 'nr': 'unit'}.items()}
+    if 'dvz.material.request' in env and not env['dvz.material.request'].search_count([('contract_id', 'in', (c1 | c2).ids)]):
+        _dvz_demo_procurement(env, company, c1, c2, uom, today)
+    if 'consultant_ids' in c1._fields and not c1.consultant_ids:
+        _dvz_demo_portal(env, c1, c2)
+    _dvz_demo_tenders(env, company, today, uom)
+    if 'dvz.cashflow.line' in env:
+        env['dvz.cashflow.line']._rebuild(company)
+    _logger.info('DigitalVizta Contracting demo extras loaded.')
+
+
+# ---------------------------------------------------------------------- tenders (CRM -> tender -> contract)
+def _dvz_demo_tenders(env, company, today, uom):
+    if 'crm.lead' not in env or 'dvz_is_tender' not in env['sale.order']._fields:
+        return
+    SO = env['sale.order']
+    if SO.search_count([('dvz_is_tender', '=', True)]):
+        return
+    sa = _ref(env, 'base.sa')
+    Partner = env['res.partner']
+
+    def partner(name, city):
+        return Partner.search([('name', '=', name)], limit=1) or Partner.create(
+            {'name': name, 'is_company': True, 'city': city, 'country_id': sa.id if sa else False, 'customer_rank': 1})
+
+    riyadh = partner('Riyadh Urban Development Co. (Demo)', 'Riyadh')
+    gulf = partner('Gulf Real Estate Developers (Demo)', 'Jeddah')
+    eastern = partner('Eastern Industrial Services (Demo)', 'Dammam')
+    sale_tax = _tax(env, company, 'sale')
+    Lead = env['crm.lead']
+
+    def lead(name, customer, revenue, probability):
+        return Lead.create({'name': name, 'type': 'opportunity', 'partner_id': customer.id,
+                            'expected_revenue': revenue, 'probability': probability, 'company_id': company.id})
+
+    def lines(rows):
+        cmds, seq = [], 0
+        for row in rows:
+            seq += 10
+            if isinstance(row, str):
+                cmds.append((0, 0, {'display_type': 'line_section', 'name': row, 'sequence': seq}))
+                continue
+            item, desc, unit, qty, mat, lab, eqp, sub = row
+            cmds.append((0, 0, {
+                'sequence': seq, 'dvz_item_no': item, 'name': desc,
+                'dvz_uom_id': uom[unit].id if uom.get(unit) else False, 'product_uom_qty': qty,
+                'dvz_cost_material': mat, 'dvz_cost_labour': lab, 'dvz_cost_equipment': eqp,
+                'dvz_cost_subcontract': sub, 'price_unit': 0.0, 'technical_price_unit': 1.0,
+                'tax_ids': [(6, 0, sale_tax.ids)],
+            }))
+        return cmds
+
+    def tender(opp, title, rows, closing, start, months, overhead=10.0, profit=10.0):
+        order = SO.with_context(default_dvz_is_tender=True).create({
+            'dvz_is_tender': True, 'partner_id': opp.partner_id.id, 'opportunity_id': opp.id,
+            'company_id': company.id, 'origin': opp.name, 'dvz_project_title': title,
+            'dvz_closing_date': closing, 'dvz_date_start': start, 'dvz_duration_months': months,
+            'validity_date': today + timedelta(days=30), 'require_signature': True,
+            'dvz_overhead_percent': overhead, 'dvz_profit_percent': profit,
+            'dvz_scope': '<p>Supply of all materials, labour, equipment and supervision for the works in the BOQ.</p>',
+            'dvz_exclusions': '<p>MEP works, external utility connections, authority fees and permits.</p>',
+            'order_line': lines(rows),
+        })
+        order.action_dvz_calculate_rates()
+        return order
+
+    warehouse_rows = [
+        'A - Civil Works',
+        ('A.01', 'Excavation and backfilling for foundations', 'm3', 2400, 6.0, 9.0, 5.0, 0.0),
+        ('A.02', 'RC isolated footings and tie beams C35', 'm3', 760, 310.0, 140.0, 40.0, 0.0),
+        ('A.03', 'Ground slab 200 mm, power-floated', 'm2', 5400, 70.0, 26.0, 8.0, 0.0),
+        'B - Steel Structure',
+        ('B.01', 'Pre-engineered steel building, supply and erect', 'ton', 260, 0.0, 0.0, 0.0, 6250.0),
+        ('B.02', 'Sandwich panel cladding and roofing 50 mm', 'm2', 8600, 58.0, 18.0, 4.0, 0.0),
+    ]
+    mosque_rows = [
+        'A - Structure',
+        ('A.01', 'Excavation in any soil, including disposal', 'm3', 1800, 4.0, 10.0, 6.0, 0.0),
+        ('A.02', 'Reinforced concrete C35, foundations and frame', 'm3', 1250, 330.0, 160.0, 45.0, 0.0),
+        ('A.03', 'Reinforcement steel Grade 60', 'ton', 190, 2650.0, 380.0, 20.0, 0.0),
+        'B - Masonry and Finishes',
+        ('B.01', '200 mm hollow block walls', 'm2', 4200, 34.0, 20.0, 2.0, 0.0),
+        ('B.02', 'Natural stone cladding, facade', 'm2', 1600, 0.0, 0.0, 0.0, 395.0),
+    ]
+    showroom_rows = [
+        'Fit-out',
+        ('F.01', 'Gypsum partitions with acoustic insulation', 'm2', 1400, 72.0, 38.0, 4.0, 0.0),
+        ('F.02', 'Porcelain floor tiles 600 x 1200', 'm2', 2100, 120.0, 35.0, 3.0, 0.0),
+        ('F.03', 'Glass shopfront system', 'm2', 320, 0.0, 0.0, 0.0, 980.0),
+    ]
+    camp_rows = [
+        'Labour Camp - Phase 1',
+        ('C.01', 'Prefabricated accommodation blocks', 'nr', 12, 0.0, 0.0, 0.0, 185000.0),
+        ('C.02', 'Site grading and interlock paving', 'm2', 6500, 38.0, 14.0, 6.0, 0.0),
+    ]
+
+    # 1. submitted, revised after negotiation (R0 -> R1), with a bid bond: waiting for the client's decision
+    opp1 = lead('Riyadh Logistics Park - Warehouse B', eastern, 6400000, 50)
+    t1 = tender(opp1, 'Riyadh Logistics Park - Warehouse B', warehouse_rows,
+                today - timedelta(days=20), today + timedelta(days=45), 9)
+    t1.action_quotation_sent()
+    t1.action_dvz_bid_bond()
+    action = t1.action_dvz_new_revision()
+    t1_r1 = SO.browse(action.get('res_id')) if action.get('res_id') else \
+        SO.search([('dvz_revision_origin_id', '=', t1.id)], limit=1)
+    t1_r1.write({'dvz_profit_percent': 7.0, 'dvz_revision_reason': 'Client asked for a better price on the steel '
+                                                                    'structure and slab'})
+    t1_r1.action_dvz_calculate_rates()
+    t1_r1.action_quotation_sent()
+
+    # 2. won: the tender becomes a contract (draft) and the opportunity is won
+    opp2 = lead('Al Malqa Mosque and Community Center', riyadh, 2950000, 70)
+    t2 = tender(opp2, 'Al Malqa Mosque and Community Center', mosque_rows,
+                today - timedelta(days=35), today + timedelta(days=20), 10)
+    t2.action_quotation_sent()
+    t2.action_confirm()
+
+    # 3. lost on price
+    opp3 = lead('Jeddah Corniche Showroom Fit-out', gulf, 1250000, 40)
+    t3 = tender(opp3, 'Jeddah Corniche Showroom Fit-out', showroom_rows,
+                today - timedelta(days=40), today, 4)
+    t3.action_quotation_sent()
+    reason = _ref(env, 'crm.lost_reason_1') or env['crm.lost.reason'].search([], limit=1)
+    if reason:
+        env['dvz.tender.lost'].create({'order_id': t3.id, 'lost_reason_id': reason.id,
+                                       'note': 'Competitor price about 6% lower'}).action_confirm()
+
+    # 4. draft tender being priced
+    opp4 = lead('Dammam Labour Camp - Phase 1', eastern, 3100000, 30)
+    tender(opp4, 'Dammam Labour Camp - Phase 1', camp_rows, today + timedelta(days=12), today + timedelta(days=60), 6)

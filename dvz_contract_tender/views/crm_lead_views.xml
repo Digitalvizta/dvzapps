@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="crm_lead_view_form_dvz_tender" model="ir.ui.view">
+        <field name="name">crm.lead.form.dvz.tender</field>
+        <field name="model">crm.lead</field>
+        <field name="inherit_id" ref="sale_crm.crm_case_form_view_oppor"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_sale_quotations_new']" position="before">
+                <button string="New Tender" name="action_dvz_new_tender" type="object" class="oe_highlight"
+                        groups="dvz_contract.group_dvz_contract_user"
+                        invisible="type == 'lead' or probability == 0 and not active"/>
+            </xpath>
+            <xpath expr="//button[@name='action_view_sale_quotation']" position="before">
+                <button class="oe_stat_button" type="object" name="action_dvz_view_tenders" icon="fa-building"
+                        groups="dvz_contract.group_dvz_contract_user" invisible="type == 'lead'">
+                    <field name="dvz_tender_count" widget="statinfo" string="Tenders"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

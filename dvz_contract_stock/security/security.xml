@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Feature switches: Settings > Contracting > Site Stores (add these groups to "Internal User") -->
+    <record id="group_dvz_site_stores" model="res.groups">
+        <field name="name">Contracting: site stores</field>
+        <field name="implied_ids" eval="[(4, ref('stock.group_stock_multi_locations'))]"/>
+    </record>
+    <record id="group_dvz_site_transfer" model="res.groups">
+        <field name="name">Contracting: transfers between sites</field>
+    </record>
+    <record id="group_dvz_material_usage" model="res.groups">
+        <field name="name">Contracting: material used on site</field>
+    </record>
+
+    <record id="dvz_material_usage_company_rule" model="ir.rule">
+        <field name="name">Material usage: multi-company</field>
+        <field name="model_id" ref="model_dvz_material_usage"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="dvz_material_usage_line_company_rule" model="ir.rule">
+        <field name="name">Material usage lines: multi-company</field>
+        <field name="model_id" ref="model_dvz_material_usage_line"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

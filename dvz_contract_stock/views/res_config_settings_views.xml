@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_site_stores" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.dvz_contract_stock</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="dvz_contract.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='dvz_contract_boq']" position="after">
+                <block title="Site Stores &amp; Material Control" name="dvz_site_stores">
+                    <setting id="dvz_group_site_stores" string="Site stores"
+                             help="Each contract gets its own store location for the material on its site.">
+                        <field name="group_dvz_site_stores"/>
+                        <div class="content-group mt-2" invisible="not group_dvz_site_stores">
+                            <div>
+                                <field name="dvz_site_deliver" class="oe_inline"/>
+                                <label for="dvz_site_deliver" class="o_light_label"/>
+                            </div>
+                            <div>
+                                <field name="dvz_charge_store_issue" class="oe_inline"/>
+                                <label for="dvz_charge_store_issue" class="o_light_label"/>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting id="dvz_mr_check_stock" string="Check stock before buying"
+                             invisible="not group_dvz_site_stores"
+                             help="Material requests first take what is free in the main store and only buy the shortfall.">
+                        <field name="dvz_mr_check_stock"/>
+                    </setting>
+                    <setting id="dvz_group_site_transfer" string="Transfers between sites and returns"
+                             invisible="not group_dvz_site_stores"
+                             help="Move material from one site to another or back to the main store. The cost moves with it.">
+                        <field name="group_dvz_site_transfer"/>
+                    </setting>
+                    <setting id="dvz_group_material_usage" string="Material used on site"
+                             invisible="not group_dvz_site_stores"
+                             help="Site teams record material used and wasted per BOQ item. Stock on site goes down.">
+                        <field name="group_dvz_material_usage"/>
+                    </setting>
+                    <setting id="dvz_returns_reduce_budget" string="Supplier returns reduce the ordered cost"
+                             help="Goods returned to a supplier are taken off the &quot;Ordered&quot; amount of their BOQ item.">
+                        <field name="dvz_returns_reduce_budget"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

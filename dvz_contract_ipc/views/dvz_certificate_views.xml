@@ -94,16 +94,11 @@
                         <field name="amount_previous"/>
                         <field name="amount_current"/>
                         <field name="amount_cumulative"/>
-                        <label for="retention_amount"/>
-                        <div class="o_row">
-                            <span>(<field name="retention_percent" class="oe_inline" nolabel="1"/> %)</span>
-                            <field name="retention_amount" nolabel="1"/>
-                        </div>
-                        <label for="advance_recovery_amount"/>
-                        <div class="o_row">
-                            <span>(<field name="advance_recovery_percent" class="oe_inline" nolabel="1"/> %)</span>
-                            <field name="advance_recovery_amount" nolabel="1"/>
-                        </div>
+                        <field name="retention_percent" string="Retention %" readonly="1"/>
+                        <field name="retention_amount"/>
+                        <field name="advance_recovery_percent" string="Advance Recovery %" readonly="1"
+                               invisible="not advance_recovery_percent"/>
+                        <field name="advance_recovery_amount" invisible="not advance_recovery_percent"/>
                         <field name="deduction_amount"/>
                         <field name="amount_due" class="oe_subtotal_footer_separator"/>
                     </group>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mail_template_dvz_tender" model="mail.template">
+        <field name="name">Contracting: Send Tender Offer</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="subject">{{ object.company_id.name }} - Tender Offer {{ object.name }} {{ object.dvz_project_title or '' }}</field>
+        <field name="email_from">{{ (object.user_id.email_formatted or object.company_id.email_formatted or user.email_formatted) }}</field>
+        <field name="partner_to" eval="False"/>
+        <field name="use_default_to" eval="True"/>
+        <field name="description">Used to send construction tenders (priced BOQ) to clients</field>
+        <field name="report_template_ids" eval="[(4, ref('dvz_contract_tender.action_report_dvz_tender'))]"/>
+        <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px; font-size: 13px;">
+    <p>Dear <t t-out="object.partner_id.name or ''">Client</t>,</p>
+    <p>
+        Thank you for inviting us to tender for
+        <b t-out="object.dvz_project_title or object.name or ''">the project</b>.
+        Please find attached our tender offer <b t-out="object.name or ''">TND/2026/0001</b>
+        (revision <t t-out="object.dvz_revision_label or 'R0'">R0</t>) with the priced bill of quantities,
+        for a total of <b t-out="format_amount(object.amount_untaxed, object.currency_id) or ''">SAR 1,000,000.00</b> excluding VAT.
+    </p>
+    <p t-if="object.validity_date">The offer is valid until <t t-out="format_date(object.validity_date) or ''">31/12/2026</t>.</p>
+    <p>You can also review and accept it online using the button below. We are happy to clarify any item or meet to discuss.</p>
+    <p>Best regards,<br/><t t-out="object.user_id.name or object.company_id.name or ''">Sales</t><br/><t t-out="object.company_id.name or ''">Company</t></p>
+</div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+</odoo>

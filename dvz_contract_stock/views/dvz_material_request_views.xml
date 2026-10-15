@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_material_request_view_form_stock" model="ir.ui.view">
+        <field name="name">dvz.material.request.form.stock</field>
+        <field name="model">dvz.material.request</field>
+        <field name="inherit_id" ref="dvz_contract_procurement.dvz_material_request_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_create_rfq']" position="attributes">
+                <attribute name="invisible">state != 'approved' or dvz_check_stock</attribute>
+            </xpath>
+            <xpath expr="//button[@name='action_create_rfq']" position="after">
+                <button name="action_dvz_process" string="Send from Store &amp; Buy the Rest" type="object"
+                        class="oe_highlight" invisible="state != 'approved' or not dvz_check_stock"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <field name="dvz_check_stock" invisible="1"/>
+                <button name="action_dvz_view_pickings" type="object" class="oe_stat_button" icon="fa-exchange"
+                        invisible="dvz_picking_count == 0">
+                    <field name="dvz_picking_count" widget="statinfo" string="From Store"/>
+                </button>
+            </xpath>
+            <xpath expr="//field[@name='line_ids']/list/field[@name='quantity']" position="after">
+                <field name="is_storable" column_invisible="True"/>
+                <field name="qty_free_store" column_invisible="not parent.dvz_check_stock" optional="show"/>
+                <field name="qty_from_stock" column_invisible="not parent.dvz_check_stock"
+                       readonly="not is_storable or stock_move_id or purchase_line_id"/>
+                <field name="qty_to_buy" column_invisible="not parent.dvz_check_stock"/>
+                <field name="stock_move_id" column_invisible="True"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
