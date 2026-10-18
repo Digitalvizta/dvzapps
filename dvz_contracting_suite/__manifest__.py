@@ -1,13 +1,14 @@
 {
     'name': 'Contracting Suite for Construction Companies',
     'summary': 'All DigitalVizta Contracting apps in one install: tendering & estimation, contracts & BOQ, progress billing, variations, '
-               'retention & guarantees, subcontractors, procurement & budget control, cash flow forecast, '
-               'consultant portal and management dashboard.',
+               'retention & guarantees, subcontractors, procurement & budget control, site stores, job costing '
+               '(material, labour, equipment, subcontract, overheads), site diary, revenue recognition (WIP), '
+               'document control (RFIs, submittals, transmittals), cash flow forecast, consultant portal and management dashboard.',
     'description': 'Install the complete DigitalVizta Contracting Suite in one step.',
-    'version': '19.0.1.2.0',
+    'version': '19.0.1.3.0',
     'category': 'Services/Contracting',
     'author': 'DigitalVizta',
-    'website': 'https://digitalvizta.net',
+    'website': 'https://digitalvizta.net/construction-erp/?utm_source=odoo_apps&utm_medium=app_store&utm_campaign=dvz_contracting_suite',
     'support': 'info@digitalvizta.net',
     'license': 'OPL-1',
     'depends': [
@@ -21,6 +22,11 @@
         'dvz_contract_portal',
         'dvz_contract_dashboard',
         'dvz_contract_tender',
+        'dvz_contract_stock',
+        'dvz_contract_costing',
+        'dvz_contract_site_diary',
+        'dvz_contract_wip',
+        'dvz_contract_documents',
     ],
     'data': [],
     'application': True,

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_dvz_wip_run" model="ir.actions.report">
+        <field name="name">WIP Schedule</field>
+        <field name="model">dvz.wip.run</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dvz_contract_wip.report_dvz_wip_run</field>
+        <field name="report_file">dvz_contract_wip.report_dvz_wip_run</field>
+        <field name="print_report_name">'WIP Schedule - %s' % (object.date)</field>
+        <field name="paperformat_id" ref="base.paperformat_euro"/>
+        <field name="binding_model_id" ref="model_dvz_wip_run"/>
+        <field name="binding_type">report</field>
+    </record>
+    <template id="report_dvz_wip_run">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <t t-set="cur" t-value="o.currency_id"/>
+                    <div class="page">
+                        <h2>WIP Schedule at <span t-field="o.date"/></h2>
+                        <p><span t-field="o.name"/> · <span t-field="o.state"/><t t-if="o.move_id"> · Entry <span t-field="o.move_id.name"/></t></p>
+                        <table class="table table-sm o_main_table" style="font-size: 10px;">
+                            <thead><tr>
+                                <th>Contract</th><th>Client</th><th class="text-end">Value</th><th class="text-end">Cost to date</th>
+                                <th class="text-end">Forecast cost</th><th class="text-end">Progress</th><th class="text-end">Earned</th>
+                                <th class="text-end">Invoiced</th><th class="text-end">Under / (over)</th><th class="text-end">Loss provision</th>
+                            </tr></thead>
+                            <tbody>
+                                <tr t-foreach="o.line_ids" t-as="l">
+                                    <td t-out="l.contract_id.name"/>
+                                    <td t-out="l.partner_id.name"/>
+                                    <td class="text-end" t-out="cur.format(l.contract_value)"/>
+                                    <td class="text-end" t-out="cur.format(l.cost_to_date)"/>
+                                    <td class="text-end" t-out="cur.format(l.forecast_cost)"/>
+                                    <td class="text-end"><t t-out="'%.1f' % l.percent"/>%</td>
+                                    <td class="text-end" t-out="cur.format(l.earned)"/>
+                                    <td class="text-end" t-out="cur.format(l.billed)"/>
+                                    <td class="text-end" t-out="cur.format(l.adjustment)"/>
+                                    <td class="text-end" t-out="cur.format(l.loss_provision)"/>
+                                </tr>
+                                <tr class="fw-bold border-top">
+                                    <td colspan="6">Total</td>
+                                    <td class="text-end" t-out="cur.format(o.total_earned)"/>
+                                    <td class="text-end" t-out="cur.format(o.total_billed)"/>
+                                    <td class="text-end" t-out="cur.format(o.total_under - o.total_over)"/>
+                                    <td class="text-end" t-out="cur.format(o.total_provision)"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p class="small text-muted">Under-billing is shown as a contract asset (unbilled revenue), over-billing as a
+                            contract liability (billings in excess of work done). Expected contract losses are provided for in full.</p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

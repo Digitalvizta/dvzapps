@@ -32,7 +32,7 @@ class DvzContractCertificate(models.Model):
     ], default='draft', required=True, tracking=True, copy=False, index=True)
     entry_mode = fields.Selection(related='company_id.dvz_ipc_entry_mode')
     line_ids = fields.One2many('dvz.contract.certificate.line', 'certificate_id', 'Progress', copy=True)
-    deduction_ids = fields.One2many('dvz.contract.certificate.deduction', 'certificate_id', 'Other Deductions', copy=True)
+    deduction_ids = fields.One2many('dvz.contract.certificate.deduction', 'certificate_id', 'Deduction Lines', copy=True)
 
     amount_previous = fields.Monetary('Previously Certified', compute='_compute_amounts', store=True)
     amount_current = fields.Monetary('Work Done This Period', compute='_compute_amounts', store=True)

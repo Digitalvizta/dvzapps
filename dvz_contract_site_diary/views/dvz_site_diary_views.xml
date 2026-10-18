@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_site_diary_view_form" model="ir.ui.view">
+        <field name="name">dvz.site.diary.form</field>
+        <field name="model">dvz.site.diary</field>
+        <field name="arch" type="xml">
+            <form string="Site Diary">
+                <header>
+                    <button name="action_copy_previous" string="Copy crews from last diary" type="object" invisible="state != 'draft'"/>
+                    <button name="action_submit" string="Submit" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_approve" string="Approve" type="object" class="oe_highlight" invisible="state != 'submitted'"
+                            groups="dvz_contract.group_dvz_contract_user"/>
+                    <button name="action_draft" string="Reset to Draft" type="object" invisible="state == 'draft'"
+                            confirm="Back to draft? Labour and equipment costs posted from this diary are removed until it is approved again."/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box"/>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="contract_id" readonly="state != 'draft'" options="{'no_create': True}"/>
+                            <field name="partner_id"/>
+                            <field name="engineer_id" readonly="state != 'draft'"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <label for="date"/>
+                            <div class="o_row">
+                                <field name="date" readonly="state != 'draft'"/>
+                                <field name="shift" readonly="state != 'draft'"/>
+                            </div>
+                            <label for="weather"/>
+                            <div class="o_row">
+                                <field name="weather" readonly="state == 'approved'"/>
+                                <field name="temp_max" readonly="state == 'approved'"/> °C
+                            </div>
+                            <field name="site_condition" readonly="state == 'approved'"/>
+                            <field name="work_hours" readonly="state == 'approved'"/>
+                        </group>
+                    </group>
+                    <div class="d-flex flex-wrap gap-4 my-2 small">
+                        <span><b><field name="manpower_count" class="d-inline"/></b> workers on site</span>
+                        <span><b><field name="labour_hours" class="d-inline"/></b> labour hours</span>
+                        <span><b><field name="equipment_hours" class="d-inline"/></b> equipment hours</span>
+                        <span groups="dvz_contract.group_dvz_show_cost">cost today: <b><field name="labour_cost" class="d-inline"/></b> labour + <b><field name="equipment_cost" class="d-inline"/></b> equipment</span>
+                        <span class="text-danger" invisible="not hours_lost"><b><field name="hours_lost" class="d-inline"/></b> hours lost</span>
+                    </div>
+                    <notebook>
+                        <page string="Manpower" name="manpower">
+                            <field name="manpower_ids" readonly="state == 'approved'">
+                                <list editable="bottom">
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="contract_id" column_invisible="True"/>
+                                    <field name="product_id" options="{'no_create_edit': True}"/>
+                                    <field name="employee_id" optional="hide"/>
+                                    <field name="subcontractor_id" optional="show"/>
+                                    <field name="headcount" sum="Total"/>
+                                    <field name="hours"/>
+                                    <field name="overtime" optional="show"/>
+                                    <field name="total_hours" sum="Total"/>
+                                    <field name="rate" groups="dvz_contract.group_dvz_show_cost"/>
+                                    <field name="cost" sum="Total" groups="dvz_contract.group_dvz_show_cost"/>
+                                    <field name="contract_line_id" options="{'no_create': True}"/>
+                                    <field name="note" optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Equipment" name="equipment">
+                            <field name="equipment_ids" readonly="state == 'approved'">
+                                <list editable="bottom">
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="contract_id" column_invisible="True"/>
+                                    <field name="product_id" options="{'no_create_edit': True}"/>
+                                    <field name="ownership" optional="show"/>
+                                    <field name="quantity" sum="Total"/>
+                                    <field name="hours_working"/>
+                                    <field name="hours_idle" optional="show"/>
+                                    <field name="total_hours" sum="Total"/>
+                                    <field name="rate" groups="dvz_contract.group_dvz_show_cost"/>
+                                    <field name="cost" sum="Total" groups="dvz_contract.group_dvz_show_cost"/>
+                                    <field name="contract_line_id" options="{'no_create': True}"/>
+                                    <field name="note" optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Work Done" name="work">
+                            <field name="work_ids" readonly="state == 'approved'">
+                                <list editable="bottom">
+                                    <field name="contract_id" column_invisible="True"/>
+                                    <field name="contract_line_id" options="{'no_create': True}"/>
+                                    <field name="description"/>
+                                    <field name="location" optional="show"/>
+                                    <field name="quantity"/>
+                                    <field name="uom_id"/>
+                                    <field name="qty_to_date"/>
+                                    <field name="percent_to_date" widget="progressbar" optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Delays &amp; Issues" name="delays">
+                            <field name="delay_ids" readonly="state == 'approved'">
+                                <list editable="bottom">
+                                    <field name="contract_id" column_invisible="True"/>
+                                    <field name="cause"/>
+                                    <field name="responsible"/>
+                                    <field name="hours_lost" sum="Total"/>
+                                    <field name="description"/>
+                                    <field name="contract_line_id" optional="hide" options="{'no_create': True}"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Photos" name="photos">
+                            <field name="photo_ids" mode="kanban" readonly="state == 'approved'">
+                                <kanban>
+                                    <field name="id"/>
+                                    <templates>
+                                        <t t-name="card" class="p-0">
+                                            <field name="image" widget="image" options="{'size': [0, 160]}" class="w-100 text-center"/>
+                                            <field name="caption" class="small p-1"/>
+                                        </t>
+                                    </templates>
+                                </kanban>
+                                <form>
+                                    <group>
+                                        <field name="image" widget="image"/>
+                                        <field name="caption"/>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Safety &amp; Notes" name="notes">
+                            <group>
+                                <group string="Safety">
+                                    <field name="toolbox_talk" readonly="state == 'approved'"/>
+                                    <field name="incidents" readonly="state == 'approved'"/>
+                                    <field name="hse_notes" readonly="state == 'approved'" nolabel="1" colspan="2" placeholder="Safety observations, incidents, near misses..."/>
+                                </group>
+                                <group string="Site">
+                                    <field name="visitors" readonly="state == 'approved'"/>
+                                    <field name="instructions" readonly="state == 'approved'"/>
+                                    <field name="materials_received" readonly="state == 'approved'"/>
+                                </group>
+                            </group>
+                            <field name="notes" readonly="state == 'approved'" placeholder="Anything else that happened today..."/>
+                        </page>
+                        <page string="Posted Costs" name="costs" invisible="state != 'approved'" groups="dvz_contract.group_dvz_show_cost">
+                            <group>
+                                <field name="approved_by_id"/>
+                                <field name="approved_date"/>
+                            </group>
+                            <field name="analytic_line_ids" readonly="1">
+                                <list>
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="name"/>
+                                    <field name="dvz_cost_type"/>
+                                    <field name="dvz_contract_line_id"/>
+                                    <field name="unit_amount" string="Hours"/>
+                                    <field name="amount" sum="Total"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="dvz_site_diary_view_list" model="ir.ui.view">
+        <field name="name">dvz.site.diary.list</field>
+        <field name="model">dvz.site.diary</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="date"/>
+                <field name="name"/>
+                <field name="contract_id"/>
+                <field name="shift" optional="hide"/>
+                <field name="engineer_id" optional="show"/>
+                <field name="weather" optional="show"/>
+                <field name="manpower_count" sum="Total"/>
+                <field name="labour_hours" sum="Total" optional="show"/>
+                <field name="equipment_hours" sum="Total" optional="show"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="labour_cost" sum="Total" optional="hide" groups="dvz_contract.group_dvz_show_cost"/>
+                <field name="equipment_cost" sum="Total" optional="hide" groups="dvz_contract.group_dvz_show_cost"/>
+                <field name="hours_lost" sum="Total" optional="show"/>
+                <field name="state" widget="badge" decoration-success="state == 'approved'" decoration-warning="state == 'submitted'" decoration-info="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dvz_site_diary_view_calendar" model="ir.ui.view">
+        <field name="name">dvz.site.diary.calendar</field>
+        <field name="model">dvz.site.diary</field>
+        <field name="arch" type="xml">
+            <calendar date_start="date" mode="month" color="contract_id" quick_create="0" event_open_popup="0">
+                <field name="contract_id" filters="1"/>
+                <field name="manpower_count"/>
+                <field name="state"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="dvz_site_diary_view_search" model="ir.ui.view">
+        <field name="name">dvz.site.diary.search</field>
+        <field name="model">dvz.site.diary</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="contract_id"/>
+                <field name="engineer_id"/>
+                <filter string="My diaries" name="mine" domain="[('engineer_id', '=', uid)]"/>
+                <filter string="To approve" name="to_approve" domain="[('state', '=', 'submitted')]"/>
+                <filter string="With delays" name="delays" domain="[('hours_lost', '>', 0)]"/>
+                <separator/>
+                <filter string="Date" name="date" date="date"/>
+                <group name="groupby">
+                    <filter string="Contract" name="group_contract" context="{'group_by': 'contract_id'}"/>
+                    <filter string="Engineer" name="group_engineer" context="{'group_by': 'engineer_id'}"/>
+                    <filter string="Month" name="group_month" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_dvz_site_diary" model="ir.actions.act_window">
+        <field name="name">Site Diaries</field>
+        <field name="res_model">dvz.site.diary</field>
+        <field name="view_mode">list,calendar,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Record the first day on site</p>
+            <p>Manpower, equipment, work done, weather, delays and photos, signed off by the site engineer.
+               On approval, labour and equipment costs go to the contract's job costing.</p>
+        </field>
+    </record>
+
+    <!-- delays analysis -->
+    <record id="dvz_site_diary_delay_view_list" model="ir.ui.view">
+        <field name="name">dvz.site.diary.delay.list</field>
+        <field name="model">dvz.site.diary.delay</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="date"/>
+                <field name="contract_id"/>
+                <field name="diary_id"/>
+                <field name="cause"/>
+                <field name="responsible"/>
+                <field name="hours_lost" sum="Total"/>
+                <field name="description"/>
+            </list>
+        </field>
+    </record>
+    <record id="dvz_site_diary_delay_view_pivot" model="ir.ui.view">
+        <field name="name">dvz.site.diary.delay.pivot</field>
+        <field name="model">dvz.site.diary.delay</field>
+        <field name="arch" type="xml">
+            <pivot string="Delays">
+                <field name="cause" type="row"/>
+                <field name="responsible" type="col"/>
+                <field name="hours_lost" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+    <record id="dvz_site_diary_delay_view_search" model="ir.ui.view">
+        <field name="name">dvz.site.diary.delay.search</field>
+        <field name="model">dvz.site.diary.delay</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="contract_id"/>
+                <filter string="Can be claimed (client / neutral)" name="claimable" domain="[('responsible', 'in', ('client', 'neutral'))]"/>
+                <filter string="Approved diaries" name="approved" domain="[('diary_id.state', '=', 'approved')]"/>
+                <filter string="Date" name="date" date="date"/>
+                <group name="groupby">
+                    <filter string="Contract" name="group_contract" context="{'group_by': 'contract_id'}"/>
+                    <filter string="Cause" name="group_cause" context="{'group_by': 'cause'}"/>
+                    <filter string="Month" name="group_month" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="action_dvz_site_diary_delay" model="ir.actions.act_window">
+        <field name="name">Delay Analysis</field>
+        <field name="res_model">dvz.site.diary.delay</field>
+        <field name="view_mode">pivot,list</field>
+        <field name="context">{'search_default_approved': 1}</field>
+    </record>
+</odoo>

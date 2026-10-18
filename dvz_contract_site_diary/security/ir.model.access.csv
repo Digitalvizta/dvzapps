@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dvz_site_diary_user,dvz_site_diary user,model_dvz_site_diary,dvz_contract.group_dvz_contract_user,1,1,1,1
+access_dvz_site_diary_manpower_user,dvz_site_diary_manpower user,model_dvz_site_diary_manpower,dvz_contract.group_dvz_contract_user,1,1,1,1
+access_dvz_site_diary_equipment_user,dvz_site_diary_equipment user,model_dvz_site_diary_equipment,dvz_contract.group_dvz_contract_user,1,1,1,1
+access_dvz_site_diary_work_user,dvz_site_diary_work user,model_dvz_site_diary_work,dvz_contract.group_dvz_contract_user,1,1,1,1
+access_dvz_site_diary_delay_user,dvz_site_diary_delay user,model_dvz_site_diary_delay,dvz_contract.group_dvz_contract_user,1,1,1,1
+access_dvz_site_diary_photo_user,dvz_site_diary_photo user,model_dvz_site_diary_photo,dvz_contract.group_dvz_contract_user,1,1,1,1

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_wip" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.dvz_contract_wip</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="dvz_contract.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='dvz_contract_boq']" position="after">
+                <block title="Revenue Recognition (WIP)" name="dvz_wip">
+                    <setting id="dvz_wip_method" string="Progress method" help="How progress is measured for new contracts">
+                        <field name="dvz_wip_method"/>
+                    </setting>
+                    <setting id="dvz_wip_accounts" string="WIP accounts" help="Journal and accounts for the month-end revenue recognition entry">
+                        <div class="content-group">
+                            <div class="row mt-2"><label for="dvz_wip_journal_id" class="col-lg-5 o_light_label"/><field name="dvz_wip_journal_id"/></div>
+                            <div class="row"><label for="dvz_wip_revenue_account_id" class="col-lg-5 o_light_label"/><field name="dvz_wip_revenue_account_id"/></div>
+                            <div class="row"><label for="dvz_wip_asset_account_id" class="col-lg-5 o_light_label"/><field name="dvz_wip_asset_account_id"/></div>
+                            <div class="row"><label for="dvz_wip_liability_account_id" class="col-lg-5 o_light_label"/><field name="dvz_wip_liability_account_id"/></div>
+                            <div class="row"><label for="dvz_wip_loss_account_id" class="col-lg-5 o_light_label"/><field name="dvz_wip_loss_account_id"/></div>
+                            <div class="row"><label for="dvz_wip_provision_account_id" class="col-lg-5 o_light_label"/><field name="dvz_wip_provision_account_id"/></div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

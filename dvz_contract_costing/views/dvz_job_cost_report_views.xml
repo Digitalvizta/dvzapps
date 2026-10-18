@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_job_cost_report_view_pivot" model="ir.ui.view">
+        <field name="name">dvz.job.cost.report.pivot</field>
+        <field name="model">dvz.job.cost.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Job Cost Analysis" sample="1">
+                <field name="contract_id" type="row"/>
+                <field name="cost_type" type="col"/>
+                <field name="budget" type="measure"/>
+                <field name="actual" type="measure"/>
+                <field name="committed" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+    <record id="dvz_job_cost_report_view_graph" model="ir.ui.view">
+        <field name="name">dvz.job.cost.report.graph</field>
+        <field name="model">dvz.job.cost.report</field>
+        <field name="arch" type="xml">
+            <graph string="Job Cost Analysis" type="bar" sample="1">
+                <field name="cost_type"/>
+                <field name="budget" type="measure"/>
+                <field name="actual" type="measure"/>
+            </graph>
+        </field>
+    </record>
+    <record id="dvz_job_cost_report_view_list" model="ir.ui.view">
+        <field name="name">dvz.job.cost.report.list</field>
+        <field name="model">dvz.job.cost.report</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0">
+                <field name="currency_id" column_invisible="True"/>
+                <field name="contract_id"/>
+                <field name="contract_line_id"/>
+                <field name="cost_type"/>
+                <field name="source"/>
+                <field name="date"/>
+                <field name="budget" sum="Total"/>
+                <field name="actual" sum="Total"/>
+                <field name="committed" sum="Total"/>
+                <field name="hours" sum="Total" optional="hide"/>
+            </list>
+        </field>
+    </record>
+    <record id="dvz_job_cost_report_view_search" model="ir.ui.view">
+        <field name="name">dvz.job.cost.report.search</field>
+        <field name="model">dvz.job.cost.report</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="contract_id"/>
+                <field name="contract_line_id"/>
+                <field name="partner_id"/>
+                <filter string="Labour" name="labour" domain="[('cost_type', '=', 'labour')]"/>
+                <filter string="Overheads" name="overheads" domain="[('cost_type', 'in', ('site_overhead', 'ho_overhead'))]"/>
+                <separator/>
+                <filter string="Date" name="date" date="date"/>
+                <group name="groupby">
+                    <filter string="Contract" name="group_contract" context="{'group_by': 'contract_id'}"/>
+                    <filter string="BOQ Item" name="group_boq" context="{'group_by': 'contract_line_id'}"/>
+                    <filter string="Cost Type" name="group_cost_type" context="{'group_by': 'cost_type'}"/>
+                    <filter string="Month" name="group_month" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="action_dvz_job_cost_report" model="ir.actions.act_window">
+        <field name="name">Job Cost Analysis</field>
+        <field name="res_model">dvz.job.cost.report</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="context">{}</field>
+    </record>
+</odoo>

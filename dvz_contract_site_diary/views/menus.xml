@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_dvz_site" name="Site" parent="dvz_contract.menu_dvz_contracting_root" sequence="25"/>
+    <menuitem id="menu_dvz_site_diary" name="Site Diaries" parent="menu_dvz_site" action="action_dvz_site_diary" sequence="10"/>
+    <menuitem id="menu_dvz_site_diary_delay" name="Delay Analysis" parent="dvz_contract.menu_dvz_reporting"
+              action="action_dvz_site_diary_delay" sequence="30"/>
+</odoo>

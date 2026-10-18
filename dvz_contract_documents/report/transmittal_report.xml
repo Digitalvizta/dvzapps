@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_dvz_transmittal" model="ir.actions.report">
+        <field name="name">Transmittal</field>
+        <field name="model">dvz.transmittal</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dvz_contract_documents.report_dvz_transmittal</field>
+        <field name="report_file">dvz_contract_documents.report_dvz_transmittal</field>
+        <field name="print_report_name">'Transmittal %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_dvz_transmittal"/>
+        <field name="binding_type">report</field>
+    </record>
+    <record id="action_report_dvz_rfi" model="ir.actions.report">
+        <field name="name">RFI</field>
+        <field name="model">dvz.rfi</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dvz_contract_documents.report_dvz_rfi</field>
+        <field name="report_file">dvz_contract_documents.report_dvz_rfi</field>
+        <field name="print_report_name">'%s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_dvz_rfi"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_dvz_transmittal">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <t t-set="address"><div t-field="o.to_partner_id" t-options="{'widget': 'contact', 'fields': ['address', 'name'], 'no_marker': True}"/></t>
+                    <div class="page">
+                        <h2>Document Transmittal <span t-field="o.name"/></h2>
+                        <div class="row mb-3">
+                            <div class="col-4"><strong>Project / contract:</strong><br/><span t-field="o.contract_id"/> <span t-field="o.contract_id.title"/></div>
+                            <div class="col-4"><strong>Date:</strong><br/><span t-field="o.date"/></div>
+                            <div class="col-4"><strong>Purpose:</strong><br/><span t-field="o.purpose"/></div>
+                        </div>
+                        <p><strong>Subject:</strong> <span t-field="o.subject"/></p>
+                        <p t-if="o.message" style="white-space: pre-wrap;" t-esc="o.message"/>
+                        <table class="table table-sm o_main_table">
+                            <thead><tr><th>#</th><th>Document No.</th><th>Description</th><th>Rev.</th><th>Format</th><th class="text-end">Copies</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="o.line_ids" t-as="l">
+                                    <td t-out="l_index + 1"/><td t-out="l.doc_ref"/><td t-out="l.description"/>
+                                    <td t-out="l.revision or ''"/><td><span t-field="l.doc_format"/></td><td class="text-end" t-out="l.copies"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="row mt-5" style="page-break-inside: avoid;">
+                            <div class="col-6"><p class="mb-5"><strong>Sent by</strong></p><p><span t-field="o.user_id"/>, <span t-field="o.company_id"/></p></div>
+                            <div class="col-6"><p class="mb-5"><strong>Received by (name, signature, date)</strong></p>
+                                <p t-if="o.ack_partner_id"><span t-field="o.ack_partner_id"/>, <span t-field="o.ack_date"/></p></div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_dvz_rfi">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Request for Information <span t-field="o.name"/></h2>
+                        <div class="row mb-3">
+                            <div class="col-4"><strong>Contract:</strong><br/><span t-field="o.contract_id"/> <span t-field="o.contract_id.title"/></div>
+                            <div class="col-4"><strong>Discipline:</strong><br/><span t-field="o.discipline"/></div>
+                            <div class="col-4"><strong>Answer needed by:</strong><br/><span t-field="o.date_required"/></div>
+                        </div>
+                        <p><strong>Subject:</strong> <span t-field="o.subject"/><t t-if="o.reference"> · <span t-field="o.reference"/></t></p>
+                        <h5>Question</h5>
+                        <p style="white-space: pre-wrap;" t-out="o.question"/>
+                        <t t-if="o.proposed_solution"><h5>Proposed solution</h5><p style="white-space: pre-wrap;" t-out="o.proposed_solution"/></t>
+                        <div class="border p-3 mt-4" style="min-height: 160px;">
+                            <h5>Answer</h5>
+                            <p t-if="o.answer" style="white-space: pre-wrap;" t-out="o.answer"/>
+                            <p t-if="o.answered_by_id" class="small text-muted"><span t-field="o.answered_by_id"/>, <span t-field="o.answer_date"/></p>
+                        </div>
+                        <p class="mt-3 small">Cost impact: <t t-out="'Yes' if o.cost_impact else 'No'"/> ·
+                            Time impact: <t t-out="('Yes, %s days' % o.impact_days) if o.time_impact else 'No'"/></p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

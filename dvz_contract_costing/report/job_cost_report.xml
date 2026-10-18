@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_dvz_job_cost" model="ir.actions.report">
+        <field name="name">Job Cost Report</field>
+        <field name="model">dvz.contract</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dvz_contract_costing.report_dvz_job_cost</field>
+        <field name="report_file">dvz_contract_costing.report_dvz_job_cost</field>
+        <field name="print_report_name">'Job Cost - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="dvz_contract.model_dvz_contract"/>
+        <field name="binding_type">report</field>
+        <field name="group_ids" eval="[(4, ref('dvz_contract.group_dvz_show_cost'))]"/>
+    </record>
+
+    <template id="report_dvz_job_cost_document">
+        <t t-call="web.external_layout">
+            <t t-set="data" t-value="o._jc_data()"/>
+            <t t-set="cur" t-value="o.currency_id"/>
+            <div class="page">
+                <h2>Job Cost Report <span t-field="o.name"/></h2>
+                <p t-if="o.title"><strong t-field="o.title"/></p>
+                <div class="row mb-3">
+                    <div class="col-3"><strong>Client:</strong><br/><span t-field="o.partner_id"/></div>
+                    <div class="col-3"><strong>Contract value:</strong><br/><span t-field="o.amount_untaxed"/></div>
+                    <div class="col-3"><strong>Work done:</strong><br/><span t-out="'%.1f' % (data['progress'] * 100)"/> %</div>
+                    <div class="col-3"><strong>Date:</strong><br/><span t-out="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d')"/></div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-4"><strong>Forecast final cost</strong><br/><span class="fs-5" t-out="cur.format(data['total']['eac'])"/></div>
+                    <div class="col-4"><strong>Forecast margin</strong><br/>
+                        <span class="fs-5" t-out="cur.format(data['margin'])"/>
+                        <span t-if="o.amount_untaxed"> (<t t-out="'%.1f' % (data['margin'] / o.amount_untaxed * 100)"/> %)</span>
+                    </div>
+                    <div class="col-4"><strong>Variance to budget</strong><br/>
+                        <span class="fs-5" t-att-class="'text-danger' if data['total']['variance'] &lt; 0 else 'text-success'"
+                              t-out="cur.format(data['total']['variance'])"/>
+                    </div>
+                </div>
+
+                <h4>Cost by type</h4>
+                <table class="table table-sm o_main_table">
+                    <thead><tr>
+                        <th>Cost type</th><th class="text-end">Budget</th><th class="text-end">Actual</th>
+                        <th class="text-end">Cost to complete</th><th class="text-end">Forecast final</th>
+                        <th class="text-end">Variance</th>
+                    </tr></thead>
+                    <tbody>
+                        <tr t-foreach="data['rows']" t-as="r">
+                            <td t-out="r['label']"/>
+                            <td class="text-end" t-out="cur.format(r['budget'])"/>
+                            <td class="text-end" t-out="cur.format(r['actual'])"/>
+                            <td class="text-end" t-out="cur.format(r['etc'])"/>
+                            <td class="text-end" t-out="cur.format(r['eac'])"/>
+                            <td class="text-end" t-att-class="'text-danger' if r['variance'] &lt; 0 else ''" t-out="cur.format(r['variance'])"/>
+                        </tr>
+                        <tr class="fw-bold border-top">
+                            <td>Total</td>
+                            <td class="text-end" t-out="cur.format(data['total']['budget'])"/>
+                            <td class="text-end" t-out="cur.format(data['total']['actual'])"/>
+                            <td class="text-end" t-out="cur.format(data['total']['etc'])"/>
+                            <td class="text-end" t-out="cur.format(data['total']['eac'])"/>
+                            <td class="text-end" t-out="cur.format(data['total']['variance'])"/>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h4 class="mt-4">Cost per BOQ item</h4>
+                <table class="table table-sm o_main_table" style="font-size: 11px;">
+                    <thead><tr>
+                        <th>Item</th><th>Description</th><th class="text-end">Value</th><th class="text-end">Budget</th>
+                        <th class="text-end">Done</th><th class="text-end">Actual</th><th class="text-end">To complete</th>
+                        <th class="text-end">Forecast</th><th class="text-end">Variance</th><th class="text-end">Margin</th>
+                    </tr></thead>
+                    <tbody>
+                        <t t-foreach="o.line_ids" t-as="l">
+                            <tr t-if="l.display_type == 'line_section'" class="fw-bold" style="background:#f1f4f8;">
+                                <td colspan="10"><span t-field="l.name"/></td>
+                            </tr>
+                            <t t-elif="not l.display_type and l.id in data['per_line']">
+                                <t t-set="v" t-value="data['per_line'][l.id]"/>
+                                <t t-set="budget" t-value="l.cost_subtotal"/>
+                                <tr>
+                                    <td t-out="l.item_no or ''"/>
+                                    <td t-out="(l.name or '')[:70]"/>
+                                    <td class="text-end" t-out="cur.format(l.price_subtotal)"/>
+                                    <td class="text-end" t-out="cur.format(budget)"/>
+                                    <td class="text-end"><t t-out="'%.0f' % (v['progress'] * 100)"/>%</td>
+                                    <td class="text-end" t-out="cur.format(v['actual_total'])"/>
+                                    <td class="text-end" t-out="cur.format(v['etc_total'])"/>
+                                    <td class="text-end" t-out="cur.format(v['eac_total'])"/>
+                                    <td class="text-end" t-att-class="'text-danger' if budget - v['eac_total'] &lt; -0.005 else ''"
+                                        t-out="cur.format(budget - v['eac_total'])"/>
+                                    <td class="text-end" t-out="cur.format(l.price_subtotal - v['eac_total'])"/>
+                                </tr>
+                            </t>
+                        </t>
+                    </tbody>
+                </table>
+                <p t-if="data['unlinked']" class="text-muted small">
+                    Costs not linked to a BOQ item (included in the totals above): <t t-out="cur.format(data['unlinked'])"/>.
+                </p>
+                <p class="text-muted small">
+                    Cost to complete method: <t t-out="dict(o._fields['costing_method']._description_selection(o.env)).get(o.costing_method)"/>.
+                    Head-office overheads: <t t-out="'%.1f' % (o.ho_overhead_percent or 0.0)"/>% of direct cost plus allocated head-office costs.
+                </p>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_dvz_job_cost">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="dvz_contract_costing.report_dvz_job_cost_document"/>
+            </t>
+        </t>
+    </template>
+</odoo>

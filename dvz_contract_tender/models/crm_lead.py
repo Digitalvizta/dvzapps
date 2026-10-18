@@ -7,7 +7,7 @@ class CrmLead(models.Model):
 
     dvz_tender_ids = fields.One2many('sale.order', 'opportunity_id', 'Tenders',
                                      domain=[('dvz_is_tender', '=', True)])
-    dvz_tender_count = fields.Integer('Tenders', compute='_compute_dvz_tender_count')
+    dvz_tender_count = fields.Integer('Tender Count', compute='_compute_dvz_tender_count')
 
     @api.depends('order_ids.dvz_is_tender')
     def _compute_dvz_tender_count(self):

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_overhead_allocation_company_rule" model="ir.rule">
+        <field name="name">Overhead allocations: multi-company</field>
+        <field name="model_id" ref="model_dvz_overhead_allocation"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+    <record id="dvz_job_cost_report_company_rule" model="ir.rule">
+        <field name="name">Job cost analysis: multi-company</field>
+        <field name="model_id" ref="model_dvz_job_cost_report"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

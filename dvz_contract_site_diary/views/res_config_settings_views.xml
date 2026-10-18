@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_diary" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.dvz_contract_site_diary</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="dvz_contract.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='dvz_contract_boq']" position="after">
+                <block title="Site Diary" name="dvz_site_diary">
+                    <setting id="dvz_diary_approval" help="The site engineer submits; the contract manager approves">
+                        <field name="dvz_diary_approval"/>
+                    </setting>
+                    <setting id="dvz_diary_post_labour" help="Crew hours × rate go to job costing as labour. Turn off if the same people enter timesheets.">
+                        <field name="dvz_diary_post_labour"/>
+                    </setting>
+                    <setting id="dvz_diary_post_equipment" help="Equipment working hours × rate go to job costing as equipment">
+                        <field name="dvz_diary_post_equipment"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

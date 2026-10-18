@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_contract_view_form_diary" model="ir.ui.view">
+        <field name="name">dvz.contract.form.diary</field>
+        <field name="model">dvz.contract</field>
+        <field name="inherit_id" ref="dvz_contract.dvz_contract_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_diaries" type="object" class="oe_stat_button" icon="fa-book" invisible="state == 'draft'">
+                    <field name="diary_count" widget="statinfo" string="Site Diaries"/>
+                </button>
+                <button name="action_view_delays" type="object" class="oe_stat_button" icon="fa-clock-o"
+                        invisible="not diary_hours_lost_client">
+                    <field name="diary_hours_lost_client" widget="statinfo" string="Hours lost (claimable)"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

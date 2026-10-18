@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="seq_dvz_overhead_allocation" model="ir.sequence">
+        <field name="name">Overhead Allocation</field>
+        <field name="code">dvz.overhead.allocation</field>
+        <field name="prefix">OHA/%(year)s/</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>

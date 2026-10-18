@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_dvz_documents" name="Documents" parent="dvz_contract.menu_dvz_contracting_root" sequence="27"/>
+    <menuitem id="menu_dvz_rfi" name="RFIs" parent="menu_dvz_documents" action="action_dvz_rfi" sequence="10"/>
+    <menuitem id="menu_dvz_submittal" name="Submittals" parent="menu_dvz_documents" action="action_dvz_submittal" sequence="20"/>
+    <menuitem id="menu_dvz_transmittal" name="Transmittals" parent="menu_dvz_documents" action="action_dvz_transmittal" sequence="30"/>
+</odoo>

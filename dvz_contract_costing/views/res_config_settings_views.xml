@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_costing" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.dvz_contract_costing</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="dvz_contract.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='dvz_contract_boq']" position="after">
+                <block title="Job Costing" name="dvz_costing">
+                    <setting id="dvz_costing_method" string="Cost to complete" help="How new contracts forecast the cost still to come">
+                        <field name="dvz_costing_method"/>
+                    </setting>
+                    <setting id="dvz_ho_overhead_percent" string="Head-office overheads" help="Percentage added on top of direct cost in the forecast of new contracts (0 if you allocate actual head-office costs)">
+                        <field name="dvz_ho_overhead_percent"/>
+                    </setting>
+                    <setting id="dvz_cost_types" string="Cost types" help="Set Material, Labour, Equipment, Subcontract or Site Overheads on product categories, products and expense accounts. Timesheets count as labour automatically.">
+                        <button name="%(product.product_category_action_form)d" type="action" string="Product categories" class="btn-link" icon="oi-arrow-right"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_my_home_dvz_documents" name="Contract documents" inherit_id="dvz_contract_portal.portal_my_home_dvz" priority="41">
+        <xpath expr="//div[@id='portal_client_category']" position="inside">
+            <t t-call="portal.portal_docs_entry">
+                <t t-set="icon" t-value="'/dvz_contract_documents/static/description/icon.png'"/>
+                <t t-set="title">Documents waiting for me</t>
+                <t t-set="text">RFIs to answer, submittals to review, transmittals to acknowledge</t>
+                <t t-set="url" t-value="'/my/contracting/documents'"/>
+                <t t-set="placeholder_count" t-value="'dvz_doc_count'"/>
+            </t>
+        </xpath>
+    </template>
+
+    <template id="portal_breadcrumbs_dvz_documents" inherit_id="portal.portal_breadcrumbs" priority="41">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name in ('dvz_documents', 'dvz_rfi', 'dvz_submittal', 'dvz_transmittal')"
+                t-attf-class="breadcrumb-item #{'active' if page_name == 'dvz_documents' else ''}">
+                <a t-if="page_name != 'dvz_documents'" href="/my/contracting/documents">Contract documents</a>
+                <t t-else="">Contract documents</t>
+            </li>
+            <li t-if="page_name in ('dvz_rfi', 'dvz_submittal', 'dvz_transmittal')" class="breadcrumb-item active"><t t-esc="doc.name"/></li>
+        </xpath>
+    </template>
+
+    <template id="dvz_doc_badge" name="Document status">
+        <t t-set="cls" t-value="{'sent': 'text-bg-warning', 'submitted': 'text-bg-warning', 'answered': 'text-bg-success',
+                                'reviewed': 'text-bg-info', 'closed': 'text-bg-secondary', 'acknowledged': 'text-bg-success',
+                                'superseded': 'text-bg-light'}.get(doc.state, 'text-bg-light')"/>
+        <span t-attf-class="badge rounded-pill #{cls}" t-out="dict(doc._fields['state'].selection).get(doc.state)"/>
+    </template>
+
+    <template id="dvz_doc_files" name="Document files">
+        <ul t-if="files" class="list-unstyled mb-0">
+            <li t-foreach="files" t-as="f"><i class="fa fa-paperclip me-1"/><a t-att-href="f[1]" t-esc="f[0]"/></li>
+        </ul>
+        <span t-else="" class="text-muted">No files</span>
+    </template>
+
+    <template id="portal_my_dvz_documents" name="Contract documents">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar"><t t-set="title">Contract documents</t></t>
+            <h5 class="mt-3">Waiting for you</h5>
+            <p t-if="not (rfis or submittals or transmittals)" class="text-muted">Nothing is waiting for you. Thank you!</p>
+            <t t-if="rfis or submittals or transmittals" t-call="portal.portal_table">
+                <thead><tr class="active"><th>Document</th><th>Subject</th><th>Contract</th><th>Due</th><th class="text-center">Status</th></tr></thead>
+                <tbody>
+                    <tr t-foreach="rfis" t-as="doc">
+                        <td><a t-attf-href="/my/contracting/rfi/#{doc.id}"><t t-esc="doc.name"/></a> <span class="badge text-bg-light">RFI</span></td>
+                        <td t-esc="doc.subject"/><td t-esc="doc.contract_id.name"/>
+                        <td t-attf-class="#{'text-danger fw-bold' if doc.is_overdue else ''}"><span t-field="doc.date_required"/></td>
+                        <td class="text-center"><t t-call="dvz_contract_documents.dvz_doc_badge"/></td>
+                    </tr>
+                    <tr t-foreach="submittals" t-as="doc">
+                        <td><a t-attf-href="/my/contracting/submittal/#{doc.id}"><t t-esc="doc.name"/> <t t-esc="doc.revision_label"/></a> <span class="badge text-bg-light">Submittal</span></td>
+                        <td t-esc="doc.title"/><td t-esc="doc.contract_id.name"/>
+                        <td t-attf-class="#{'text-danger fw-bold' if doc.is_overdue else ''}"><span t-field="doc.date_due"/></td>
+                        <td class="text-center"><t t-call="dvz_contract_documents.dvz_doc_badge"/></td>
+                    </tr>
+                    <tr t-foreach="transmittals" t-as="doc">
+                        <td><a t-attf-href="/my/contracting/transmittal/#{doc.id}"><t t-esc="doc.name"/></a> <span class="badge text-bg-light">Transmittal</span></td>
+                        <td t-esc="doc.subject"/><td t-esc="doc.contract_id.name"/><td><span t-field="doc.date"/></td>
+                        <td class="text-center"><t t-call="dvz_contract_documents.dvz_doc_badge"/></td>
+                    </tr>
+                </tbody>
+            </t>
+            <h5 class="mt-4">All RFIs</h5>
+            <p t-if="not all_rfis" class="text-muted">No RFIs yet.</p>
+            <t t-if="all_rfis" t-call="portal.portal_table">
+                <thead><tr class="active"><th>RFI</th><th>Subject</th><th>Contract</th><th>Sent</th><th class="text-center">Status</th></tr></thead>
+                <tbody>
+                    <tr t-foreach="all_rfis" t-as="doc">
+                        <td><a t-attf-href="/my/contracting/rfi/#{doc.id}"><t t-esc="doc.name"/></a></td>
+                        <td t-esc="doc.subject"/><td t-esc="doc.contract_id.name"/><td><span t-field="doc.date_sent"/></td>
+                        <td class="text-center"><t t-call="dvz_contract_documents.dvz_doc_badge"/></td>
+                    </tr>
+                </tbody>
+            </t>
+            <h5 class="mt-4">All submittals</h5>
+            <p t-if="not all_submittals" class="text-muted">No submittals yet.</p>
+            <t t-if="all_submittals" t-call="portal.portal_table">
+                <thead><tr class="active"><th>Submittal</th><th>Title</th><th>Contract</th><th class="text-center">Code</th><th class="text-center">Status</th></tr></thead>
+                <tbody>
+                    <tr t-foreach="all_submittals" t-as="doc">
+                        <td><a t-attf-href="/my/contracting/submittal/#{doc.id}"><t t-esc="doc.name"/> <t t-esc="doc.revision_label"/></a></td>
+                        <td t-esc="doc.title"/><td t-esc="doc.contract_id.name"/>
+                        <td class="text-center"><b t-esc="doc.review_code or '-'"/></td>
+                        <td class="text-center"><t t-call="dvz_contract_documents.dvz_doc_badge"/></td>
+                    </tr>
+                </tbody>
+            </t>
+        </t>
+    </template>
+
+    <template id="dvz_doc_alerts" name="Document alerts">
+        <div t-if="message == 'answered'" class="alert alert-success">Thank you. Your answer has been sent to the contractor.</div>
+        <div t-if="message == 'reviewed'" class="alert alert-success">Thank you. Your review has been sent to the contractor.</div>
+        <div t-if="message == 'acknowledged'" class="alert alert-success">Receipt acknowledged. Thank you.</div>
+        <div t-if="error" class="alert alert-danger" t-esc="error"/>
+    </template>
+
+    <template id="portal_my_dvz_rfi" name="RFI">
+        <t t-call="portal.portal_layout">
+            <div class="row mt-3"><div class="col-12">
+                <t t-call="dvz_contract_documents.dvz_doc_alerts"/>
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                    <div>
+                        <h3 class="mb-0"><t t-esc="doc.name"/>: <t t-esc="doc.subject"/></h3>
+                        <div class="text-muted"><t t-esc="contract.name"/> <t t-esc="contract.title"/></div>
+                    </div>
+                    <t t-call="dvz_contract_documents.dvz_doc_badge"/>
+                </div>
+                <div class="row g-3 mb-3 small">
+                    <div class="col-6 col-md-3"><b>Discipline</b><br/><span t-field="doc.discipline"/></div>
+                    <div class="col-6 col-md-3"><b>Drawing / location</b><br/><t t-esc="doc.reference or '-'"/></div>
+                    <div class="col-6 col-md-3"><b>Sent</b><br/><span t-field="doc.date_sent"/></div>
+                    <div class="col-6 col-md-3"><b>Answer needed by</b><br/>
+                        <span t-attf-class="#{'text-danger fw-bold' if doc.is_overdue else ''}" t-field="doc.date_required"/></div>
+                </div>
+                <div class="border rounded p-3 mb-3">
+                    <h5>Question</h5>
+                    <p style="white-space: pre-wrap;" t-esc="doc.question"/>
+                    <t t-if="doc.proposed_solution"><h6>Contractor's proposed solution</h6><p style="white-space: pre-wrap;" t-esc="doc.proposed_solution"/></t>
+                    <h6>Documents</h6><t t-call="dvz_contract_documents.dvz_doc_files"/>
+                </div>
+                <div t-if="doc.answer and doc.state != 'sent'" class="border rounded p-3 mb-3 bg-light">
+                    <h5>Answer</h5>
+                    <p class="small text-muted">By <t t-esc="doc.answered_by_id.name"/> on <span t-field="doc.answer_date"/></p>
+                    <p style="white-space: pre-wrap;" t-esc="doc.answer"/>
+                    <t t-call="dvz_contract_documents.dvz_doc_files"><t t-set="files" t-value="answer_files"/></t>
+                </div>
+                <form t-if="can_answer" method="post" t-attf-action="/my/contracting/rfi/#{doc.id}/answer" enctype="multipart/form-data" class="border rounded p-3 bg-light">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <h5 class="mb-2">Your answer</h5>
+                    <textarea name="answer" class="form-control mb-2" rows="5" required="required" placeholder="Your answer to the contractor"/>
+                    <label class="form-label small">Attach a sketch or revised drawing (optional)</label>
+                    <input type="file" name="files" multiple="multiple" class="form-control mb-3"/>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-paper-plane me-1"/>Send answer</button>
+                </form>
+            </div></div>
+        </t>
+    </template>
+
+    <template id="portal_my_dvz_submittal" name="Submittal">
+        <t t-call="portal.portal_layout">
+            <div class="row mt-3"><div class="col-12">
+                <t t-call="dvz_contract_documents.dvz_doc_alerts"/>
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                    <div>
+                        <h3 class="mb-0"><t t-esc="doc.name"/> <t t-esc="doc.revision_label"/>: <t t-esc="doc.title"/></h3>
+                        <div class="text-muted"><t t-esc="contract.name"/> <t t-esc="contract.title"/></div>
+                    </div>
+                    <t t-call="dvz_contract_documents.dvz_doc_badge"/>
+                </div>
+                <div class="row g-3 mb-3 small">
+                    <div class="col-6 col-md-3"><b>Type</b><br/><span t-field="doc.submittal_type"/></div>
+                    <div class="col-6 col-md-3"><b>Specification</b><br/><t t-esc="doc.spec_section or '-'"/></div>
+                    <div class="col-6 col-md-3"><b>Submitted</b><br/><span t-field="doc.date_submitted"/></div>
+                    <div class="col-6 col-md-3"><b>Review due</b><br/>
+                        <span t-attf-class="#{'text-danger fw-bold' if doc.is_overdue else ''}" t-field="doc.date_due"/></div>
+                </div>
+                <div class="border rounded p-3 mb-3">
+                    <p t-if="doc.description" style="white-space: pre-wrap;" t-esc="doc.description"/>
+                    <h6>Documents for review</h6><t t-call="dvz_contract_documents.dvz_doc_files"/>
+                </div>
+                <div t-if="doc.review_code" class="border rounded p-3 mb-3 bg-light">
+                    <h5>Review: <t t-out="dict(codes).get(doc.review_code)"/></h5>
+                    <p class="small text-muted">By <t t-esc="doc.reviewed_by_id.name"/> on <span t-field="doc.review_date"/></p>
+                    <p t-if="doc.review_comment" style="white-space: pre-wrap;" t-esc="doc.review_comment"/>
+                    <t t-call="dvz_contract_documents.dvz_doc_files"><t t-set="files" t-value="review_files"/></t>
+                </div>
+                <form t-if="can_review" method="post" t-attf-action="/my/contracting/submittal/#{doc.id}/review" enctype="multipart/form-data" class="border rounded p-3 bg-light">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <h5 class="mb-2">Your review</h5>
+                    <div class="mb-2">
+                        <div t-foreach="codes" t-as="c" class="form-check">
+                            <input class="form-check-input" type="radio" name="code" t-att-value="c[0]" t-attf-id="code_#{c[0]}" required="required"/>
+                            <label class="form-check-label" t-attf-for="code_#{c[0]}" t-esc="c[1]"/>
+                        </div>
+                    </div>
+                    <textarea name="comment" class="form-control mb-2" rows="4" placeholder="Comments (required for B, C and D)"/>
+                    <label class="form-label small">Attach marked-up documents (optional)</label>
+                    <input type="file" name="files" multiple="multiple" class="form-control mb-3"/>
+                    <button type="submit" class="btn btn-primary"><i class="fa fa-check me-1"/>Send review</button>
+                </form>
+            </div></div>
+        </t>
+    </template>
+
+    <template id="portal_my_dvz_transmittal" name="Transmittal">
+        <t t-call="portal.portal_layout">
+            <div class="row mt-3"><div class="col-12">
+                <t t-call="dvz_contract_documents.dvz_doc_alerts"/>
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                    <div>
+                        <h3 class="mb-0"><t t-esc="doc.name"/>: <t t-esc="doc.subject"/></h3>
+                        <div class="text-muted"><t t-esc="contract.name"/> · <span t-field="doc.purpose"/> · <span t-field="doc.date"/></div>
+                    </div>
+                    <t t-call="dvz_contract_documents.dvz_doc_badge"/>
+                </div>
+                <p t-if="doc.message" style="white-space: pre-wrap;" t-esc="doc.message"/>
+                <t t-if="doc.line_ids" t-call="portal.portal_table">
+                    <thead><tr class="active"><th>Document No.</th><th>Description</th><th>Rev.</th><th>Format</th><th class="text-end">Copies</th></tr></thead>
+                    <tbody>
+                        <tr t-foreach="doc.line_ids" t-as="l">
+                            <td t-esc="l.doc_ref"/><td t-esc="l.description"/><td t-esc="l.revision or ''"/>
+                            <td><span t-field="l.doc_format"/></td><td class="text-end" t-esc="l.copies"/>
+                        </tr>
+                    </tbody>
+                </t>
+                <h6 class="mt-3">Files</h6><t t-call="dvz_contract_documents.dvz_doc_files"/>
+                <p t-if="doc.ack_partner_id" class="mt-3 text-success">Received by <t t-esc="doc.ack_partner_id.name"/> on <span t-field="doc.ack_date"/></p>
+                <form t-if="can_ack" method="post" t-attf-action="/my/contracting/transmittal/#{doc.id}/ack" class="mt-3">
+                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                    <button type="submit" class="btn btn-success"><i class="fa fa-check me-1"/>Acknowledge receipt</button>
+                </form>
+            </div></div>
+        </t>
+    </template>
+
+    <!-- RFIs and submittals on the contract page -->
+    <template id="portal_my_dvz_contract_documents" inherit_id="dvz_contract_portal.portal_my_dvz_contract">
+        <xpath expr="//h5[contains(., 'Variation orders')]" position="before">
+            <h5 class="mt-4">RFIs</h5>
+            <p t-if="not dvz_rfis" class="text-muted">No RFIs yet.</p>
+            <t t-if="dvz_rfis" t-call="portal.portal_table">
+                <thead><tr class="active"><th>RFI</th><th>Subject</th><th>Due</th><th class="text-center">Status</th></tr></thead>
+                <tbody>
+                    <tr t-foreach="dvz_rfis" t-as="doc">
+                        <td><a t-attf-href="/my/contracting/rfi/#{doc.id}"><t t-esc="doc.name"/></a></td>
+                        <td t-esc="doc.subject"/>
+                        <td t-attf-class="#{'text-danger fw-bold' if doc.is_overdue else ''}"><span t-field="doc.date_required"/></td>
+                        <td class="text-center"><t t-call="dvz_contract_documents.dvz_doc_badge"/></td>
+                    </tr>
+                </tbody>
+            </t>
+            <h5 class="mt-4">Submittals</h5>
+            <p t-if="not dvz_submittals" class="text-muted">No submittals yet.</p>
+            <t t-if="dvz_submittals" t-call="portal.portal_table">
+                <thead><tr class="active"><th>Submittal</th><th>Title</th><th class="text-center">Code</th><th class="text-center">Status</th></tr></thead>
+                <tbody>
+                    <tr t-foreach="dvz_submittals" t-as="doc">
+                        <td><a t-attf-href="/my/contracting/submittal/#{doc.id}"><t t-esc="doc.name"/> <t t-esc="doc.revision_label"/></a></td>
+                        <td t-esc="doc.title"/><td class="text-center"><b t-esc="doc.review_code or '-'"/></td>
+                        <td class="text-center"><t t-call="dvz_contract_documents.dvz_doc_badge"/></td>
+                    </tr>
+                </tbody>
+            </t>
+        </xpath>
+    </template>
+</odoo>

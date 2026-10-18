@@ -1,0 +1,9 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dvz_rfi_user,dvz_rfi user,model_dvz_rfi,dvz_contract.group_dvz_contract_user,1,1,1,0
+access_dvz_rfi_manager,dvz_rfi manager,model_dvz_rfi,dvz_contract.group_dvz_contract_manager,1,1,1,1
+access_dvz_submittal_user,dvz_submittal user,model_dvz_submittal,dvz_contract.group_dvz_contract_user,1,1,1,0
+access_dvz_submittal_manager,dvz_submittal manager,model_dvz_submittal,dvz_contract.group_dvz_contract_manager,1,1,1,1
+access_dvz_transmittal_user,dvz_transmittal user,model_dvz_transmittal,dvz_contract.group_dvz_contract_user,1,1,1,0
+access_dvz_transmittal_manager,dvz_transmittal manager,model_dvz_transmittal,dvz_contract.group_dvz_contract_manager,1,1,1,1
+access_dvz_transmittal_line_user,dvz_transmittal_line user,model_dvz_transmittal_line,dvz_contract.group_dvz_contract_user,1,1,1,1
+access_dvz_transmittal_line_manager,dvz_transmittal_line manager,model_dvz_transmittal_line,dvz_contract.group_dvz_contract_manager,1,1,1,1

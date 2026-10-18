@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_category_form_view_costing" model="ir.ui.view">
+        <field name="name">product.category.form.dvz.costing</field>
+        <field name="model">product.category</field>
+        <field name="inherit_id" ref="product.product_category_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='parent_id']" position="after">
+                <field name="dvz_cost_type" class="oe_inline"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="product_template_form_view_costing" model="ir.ui.view">
+        <field name="name">product.template.form.dvz.costing</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='categ_id']" position="after">
+                <field name="dvz_cost_type" placeholder="From the category"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_account_form_costing" model="ir.ui.view">
+        <field name="name">account.account.form.dvz.costing</field>
+        <field name="model">account.account</field>
+        <field name="inherit_id" ref="account.view_account_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='account_type']" position="after">
+                <field name="dvz_cost_type"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_task_form_costing" model="ir.ui.view">
+        <field name="name">project.task.form.dvz.costing</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='project_id']" position="after">
+                <field name="dvz_contract_line_id" invisible="not project_id" options="{'no_create': True}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

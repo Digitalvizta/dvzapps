@@ -6,7 +6,7 @@
     'version': '19.0.1.0.0',
     'category': 'Services/Contracting',
     'author': 'DigitalVizta',
-    'website': 'https://digitalvizta.net',
+    'website': 'https://digitalvizta.net/construction-erp/?utm_source=odoo_apps&utm_medium=app_store&utm_campaign=dvz_contract',
     'support': 'info@digitalvizta.net',
     'license': 'LGPL-3',
     'depends': ['account', 'project', 'analytic', 'uom', 'mail'],

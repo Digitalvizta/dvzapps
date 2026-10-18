@@ -392,7 +392,7 @@ class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
 
     dvz_item_no = fields.Char('Item No.')
-    dvz_uom_id = fields.Many2one('uom.uom', 'Unit')
+    dvz_uom_id = fields.Many2one('uom.uom', 'BOQ Unit')
     dvz_cost_material = fields.Monetary('Material')
     dvz_cost_labour = fields.Monetary('Labour')
     dvz_cost_equipment = fields.Monetary('Equipment')

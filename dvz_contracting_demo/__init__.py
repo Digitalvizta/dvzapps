@@ -422,6 +422,7 @@ def _dvz_load_demo(env):
     env['dvz.contract']._cron_dlp_reminders()
     env['dvz.bank.guarantee']._cron_guarantee_reminders()
     _dvz_demo_tenders(env, company, today, uom)
+    _dvz_demo_site_and_costing(env, company, c1, c2, today)
     env['dvz.cashflow.line']._rebuild(company)
     _logger.info('DigitalVizta Contracting demo data loaded.')
 
@@ -561,6 +562,7 @@ def _dvz_load_extras(env):
     if 'consultant_ids' in c1._fields and not c1.consultant_ids:
         _dvz_demo_portal(env, c1, c2)
     _dvz_demo_tenders(env, company, today, uom)
+    _dvz_demo_site_and_costing(env, company, c1, c2, today)
     if 'dvz.cashflow.line' in env:
         env['dvz.cashflow.line']._rebuild(company)
     _logger.info('DigitalVizta Contracting demo extras loaded.')
@@ -685,3 +687,217 @@ def _dvz_demo_tenders(env, company, today, uom):
     # 4. draft tender being priced
     opp4 = lead('Dammam Labour Camp - Phase 1', eastern, 3100000, 30)
     tender(opp4, 'Dammam Labour Camp - Phase 1', camp_rows, today + timedelta(days=12), today + timedelta(days=60), 6)
+
+
+# ---------------------------------------------------------------------- job costing, site diary, WIP, documents (v1.3)
+def _dvz_demo_site_and_costing(env, company, c1, c2, today):
+    """Cost split, labour and equipment, site diaries, overhead allocation, WIP and RFIs / submittals.
+    Safe to run more than once: each part is skipped when it already exists."""
+    if 'dvz.site.diary' not in env or env['dvz.site.diary'].search_count([('contract_id', 'in', (c1 | c2).ids)]):
+        return
+    Product = env['product.product']
+    Categ = env['product.category']
+
+    def categ(name, ctype):
+        rec = Categ.search([('name', '=', name)], limit=1) or Categ.create({'name': name})
+        rec.dvz_cost_type = ctype
+        return rec
+
+    labour_c = categ('Labour Trades', 'labour')
+    equip_c = categ('Plant & Equipment', 'equipment')
+    site_c = categ('Site Overheads', 'site_overhead')
+    for name in ('Building Materials', 'Materials'):
+        cat = Categ.search([('name', '=', name)], limit=1)
+        if cat:
+            cat.dvz_cost_type = 'material'
+
+    def product(name, cat, cost):
+        return Product.search([('name', '=', name)], limit=1) or Product.create(
+            {'name': name, 'type': 'service', 'categ_id': cat.id, 'standard_price': cost, 'purchase_ok': True})
+
+    trades = {k: product(k, labour_c, v) for k, v in (
+        ('Mason', 18.0), ('Steel Fixer', 20.0), ('Carpenter (Formwork)', 19.0), ('Helper', 12.0),
+        ('Electrician', 22.0), ('Foreman', 35.0))}
+    plant = {k: product(k, equip_c, v) for k, v in (
+        ('Excavator 20t', 180.0), ('Mobile Crane 50t', 320.0), ('Concrete Pump', 260.0), ('Dump Truck', 95.0))}
+    office = product('Site Office & Utilities (month)', site_c, 0.0)
+
+    company.write({'dvz_ho_overhead_percent': 5.0, 'dvz_costing_method': 'auto'})
+    for contract in (c1, c2):
+        contract.write({'ho_overhead_percent': 5.0, 'costing_method': 'auto'})
+        # split every BOQ item's estimated cost: 55 % material, 25 % labour, 10 % equipment, 5 % subcontract, 5 % site
+        for line in contract.line_ids.filtered(lambda l: not l.display_type and l.cost_unit):
+            unit = line.cost_unit
+            line.write({
+                'cost_material_unit': round(unit * 0.55, 2), 'cost_labour_unit': round(unit * 0.25, 2),
+                'cost_equipment_unit': round(unit * 0.10, 2), 'cost_subcontract_unit': round(unit * 0.05, 2),
+                'cost_overhead_unit': round(unit - round(unit * 0.55, 2) - round(unit * 0.25, 2)
+                                            - round(unit * 0.10, 2) - round(unit * 0.05, 2), 2),
+            })
+        column = contract._analytic_column()
+        if column:
+            for months_ago in (2, 1, 0):
+                env['account.analytic.line'].create({
+                    'name': 'Site office rent, power and water', 'product_id': office.id,
+                    'date': fields.Date.subtract(today, months=months_ago, days=1 if months_ago == 0 else 0),
+                    'amount': -18500.0 if contract == c1 else -9500.0, column: contract.analytic_account_id.id})
+
+    # ---- costs to date in line with the certified progress (bills, payroll and plant), a few items over budget
+    over = {0: 1.12, 3: 1.08, 5: 1.15}
+    for contract in (c1, c2):
+        column = contract._analytic_column()
+        if not column:
+            continue
+        lines = contract.line_ids.filtered(lambda l: not l.display_type and l.cost_unit)
+        progress = lines._jc_progress()
+        vals_list = []
+        for i, line in enumerate(lines):
+            done = progress.get(line.id, 0.0)
+            if not done:
+                continue
+            factor = over.get(i, 0.97)
+            for ctype, fname, label in (('material', 'budget_material', 'Materials (supplier bills)'),
+                                        ('labour', 'budget_labour', 'Site labour (payroll)'),
+                                        ('equipment', 'budget_equipment', 'Plant hire and fuel'),
+                                        ('subcontract', 'budget_subcontract', 'Specialist subcontract')):
+                amount = round(line[fname] * done * factor, 2)
+                if amount:
+                    vals_list.append({
+                        'name': '%s: %s' % (label, line.item_no or ''), 'date': today - timedelta(days=20 + i),
+                        'amount': -amount, column: contract.analytic_account_id.id,
+                        'dvz_cost_type': ctype, 'dvz_contract_line_id': line.id,
+                        'unit_amount': round(line.budget_hours * done * factor, 1) if ctype == 'labour' else 0.0,
+                    })
+        env['account.analytic.line'].create(vals_list)
+
+    # ---- site diaries for the villas contract: the last 8 working days
+    items = c1.line_ids.filtered(lambda l: not l.display_type)
+    weather = ['hot', 'sunny', 'sandstorm', 'hot', 'windy', 'sunny', 'hot', 'sunny']
+    day, made = today, 0
+    while made < 8:
+        day = day - timedelta(days=1)
+        if day.weekday() == 4:   # Friday: weekend in Saudi Arabia
+            continue
+        boq_a = items[made % len(items)]
+        boq_b = items[(made + 3) % len(items)]
+        vals = {
+            'contract_id': c1.id, 'date': day, 'weather': weather[made], 'temp_max': 41 + made % 5,
+            'work_hours': 10.0, 'toolbox_talk': True,
+            'manpower_ids': [
+                (0, 0, {'product_id': trades['Foreman'].id, 'headcount': 1, 'hours': 10, 'rate': 35.0, 'contract_line_id': boq_a.id}),
+                (0, 0, {'product_id': trades['Mason'].id, 'headcount': 8 + made % 3, 'hours': 9, 'rate': 18.0,
+                        'contract_line_id': boq_a.id, 'note': 'Block work, ground floor'}),
+                (0, 0, {'product_id': trades['Steel Fixer'].id, 'headcount': 6, 'hours': 9, 'rate': 20.0,
+                        'contract_line_id': boq_b.id, 'note': 'Rebar for slab'}),
+                (0, 0, {'product_id': trades['Helper'].id, 'headcount': 10, 'hours': 9, 'rate': 12.0, 'contract_line_id': boq_a.id}),
+            ],
+            'equipment_ids': [
+                (0, 0, {'product_id': plant['Excavator 20t'].id, 'quantity': 1, 'hours_working': 7, 'rate': 180.0,
+                        'contract_line_id': boq_b.id}),
+                (0, 0, {'product_id': plant['Dump Truck'].id, 'quantity': 2, 'hours_working': 8, 'rate': 95.0,
+                        'ownership': 'rented', 'contract_line_id': boq_b.id}),
+            ],
+            'work_ids': [(0, 0, {'contract_line_id': boq_a.id, 'description': (boq_a.name or '')[:80],
+                                 'location': 'Villas %s-%s' % (made * 3 + 1, made * 3 + 3),
+                                 'quantity': round((boq_a.quantity or 10) * 0.02, 2)})],
+            'materials_received': 'Ready-mix concrete 60 m3, blocks 4,000 nr' if made % 3 == 0 else False,
+        }
+        if weather[made] == 'sandstorm':
+            vals['delay_ids'] = [(0, 0, {'cause': 'weather', 'responsible': 'neutral', 'hours_lost': 3.0,
+                                         'description': 'Sandstorm, crane and concrete work stopped'})]
+            vals['site_condition'] = 'restricted'
+        if made == 5:
+            vals['delay_ids'] = [(0, 0, {'cause': 'consultant', 'responsible': 'client', 'hours_lost': 4.0,
+                                         'description': 'Waiting for consultant approval of slab reinforcement'})]
+            vals['equipment_ids'].append((0, 0, {'product_id': plant['Mobile Crane 50t'].id, 'quantity': 1,
+                                                 'hours_working': 2, 'hours_idle': 4, 'rate': 320.0,
+                                                 'ownership': 'rented', 'contract_line_id': boq_b.id}))
+        diary = env['dvz.site.diary'].create(vals)
+        if made > 0:          # the latest one stays waiting for approval
+            diary.action_submit()
+            if diary.state == 'submitted':
+                diary.action_approve()
+        else:
+            diary.action_submit()
+        made += 1
+
+    # ---- head-office overheads of last month, shared by direct cost
+    last_month_end = fields.Date.start_of(today, 'month') - timedelta(days=1)
+    alloc = env['dvz.overhead.allocation'].create({
+        'description': 'Head-office salaries, rent and IT', 'amount': 45000.0, 'basis': 'value',
+        'date': last_month_end, 'date_from': fields.Date.start_of(last_month_end, 'month'), 'date_to': last_month_end,
+        'contract_ids': [(6, 0, (c1 | c2).ids)],
+    })
+    alloc.action_compute()
+    alloc.action_post()
+
+    # ---- revenue recognition (WIP) at the end of last month
+    if 'dvz.wip.run' in env:
+        journal = env['account.journal'].search([('type', '=', 'general'), ('company_id', '=', company.id)], limit=1)
+        company.write({
+            'dvz_wip_journal_id': journal.id,
+            'dvz_wip_revenue_account_id': _account(env, company, '411100', 'Contract Revenue - Work Certified', 'income').id,
+            'dvz_wip_asset_account_id': _account(env, company, '121700', 'Contract Assets (Unbilled Revenue)', 'asset_current').id,
+            'dvz_wip_liability_account_id': _account(env, company, '221700', 'Contract Liabilities (Billings in Excess)', 'liability_current').id,
+            'dvz_wip_loss_account_id': _account(env, company, '511800', 'Expected Contract Losses', 'expense_direct_cost').id,
+            'dvz_wip_provision_account_id': _account(env, company, '221800', 'Provision for Contract Losses', 'liability_current').id,
+        })
+        run = env['dvz.wip.run'].create({'date': last_month_end, 'journal_id': journal.id})
+        run.action_compute()
+        if journal and run.line_ids:
+            try:
+                with env.cr.savepoint():
+                    run.action_post()
+            except Exception as e:   # demo must never fail on accounting details
+                _logger.warning('Demo WIP run not posted: %s', e)
+
+    # ---- document control
+    if 'dvz.rfi' not in env:
+        return
+    consultant = c1.consultant_ids[:1] if 'consultant_ids' in c1._fields else env['res.partner']
+    Rfi = env['dvz.rfi']
+    r1 = Rfi.create({'contract_id': c1.id, 'subject': 'Slab thickness at villa type B, grid C/4-6',
+                     'discipline': 'structural', 'reference': 'S-104 Rev 2',
+                     'question': 'Drawing S-104 shows a 200 mm slab while the schedule on S-110 gives 250 mm. '
+                                 'Which thickness applies to villa type B?',
+                     'proposed_solution': 'Use 250 mm as per the schedule.'})
+    r1.action_send()
+    if consultant:
+        r1._dvz_answer(consultant, '250 mm applies. Revised drawing S-104 Rev 3 will be issued. '
+                                   'Additional concrete to be valued as a variation.')
+        r1.write({'cost_impact': True, 'time_impact': True, 'impact_days': 4})
+        try:
+            with env.cr.savepoint():
+                r1.action_create_variation()
+        except Exception as e:
+            _logger.warning('Demo RFI variation not created: %s', e)
+    r2 = Rfi.create({'contract_id': c1.id, 'subject': 'Waterproofing detail at roof parapet',
+                     'discipline': 'architectural', 'priority': '1', 'reference': 'A-501',
+                     'question': 'The parapet detail does not show how the membrane is terminated. Please provide the detail.'})
+    r2.action_send()
+    r2.date_required = today - timedelta(days=2)        # overdue
+    Rfi.create({'contract_id': c2.id, 'subject': 'Ceiling height in meeting rooms', 'discipline': 'architectural',
+                'question': 'Confirm the finished ceiling height for the meeting rooms on floor 14.'}).action_send()
+
+    att = env['ir.attachment'].create({'name': 'Membrane-datasheet.pdf', 'datas': 'JVBERi0xLjQK', 'mimetype': 'application/pdf'})
+    Sub = env['dvz.submittal']
+    s1 = Sub.create({'contract_id': c1.id, 'title': 'Bituminous waterproofing membrane 4 mm', 'submittal_type': 'material',
+                     'spec_section': '07 13 00', 'attachment_ids': [(6, 0, att.ids)]})
+    s1.action_submit()
+    if consultant:
+        s1._dvz_review(consultant, 'C', 'Membrane thickness and fire rating certificate missing. Resubmit.')
+        new = Sub.browse(s1.action_resubmit()['res_id'])
+        new.attachment_ids = [(6, 0, att.copy().ids)]
+        new.action_submit()
+        s2 = Sub.create({'contract_id': c1.id, 'title': 'Rebar shop drawings, villa type A', 'submittal_type': 'shop_drawing',
+                         'attachment_ids': [(6, 0, att.copy({'name': 'SD-RB-001.pdf'}).ids)]})
+        s2.action_submit()
+        s2._dvz_review(consultant, 'A', '')
+        s2.action_close()
+        tr = env['dvz.transmittal'].create({
+            'contract_id': c1.id, 'to_partner_id': consultant.id, 'subject': 'Rebar shop drawings, villa type A',
+            'purpose': 'approval',
+            'line_ids': [(0, 0, {'doc_ref': 'SD-RB-001', 'description': 'Rebar layout, foundations', 'revision': 'R0'}),
+                         (0, 0, {'doc_ref': 'SD-RB-002', 'description': 'Rebar layout, ground slab', 'revision': 'R0'})]})
+        tr.action_send()
+        tr._dvz_acknowledge(consultant)

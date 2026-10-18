@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_dvz_site_diary" model="ir.actions.report">
+        <field name="name">Daily Site Report</field>
+        <field name="model">dvz.site.diary</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">dvz_contract_site_diary.report_dvz_site_diary</field>
+        <field name="report_file">dvz_contract_site_diary.report_dvz_site_diary</field>
+        <field name="print_report_name">'Daily Site Report - %s - %s' % (object.contract_id.name, object.date)</field>
+        <field name="binding_model_id" ref="model_dvz_site_diary"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_dvz_site_diary_document">
+        <t t-call="web.external_layout">
+            <div class="page">
+                <h2>Daily Site Report <small class="text-muted" t-field="o.name"/></h2>
+                <div class="row mb-2">
+                    <div class="col-4"><strong>Contract:</strong> <span t-field="o.contract_id"/><br/><span t-field="o.contract_id.title"/></div>
+                    <div class="col-4"><strong>Client:</strong> <span t-field="o.partner_id"/></div>
+                    <div class="col-4"><strong>Date:</strong> <span t-field="o.date"/> (<span t-field="o.shift"/> shift)</div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-4"><strong>Weather:</strong> <span t-field="o.weather"/><t t-if="o.temp_max">, <t t-out="'%.0f' % o.temp_max"/> °C</t></div>
+                    <div class="col-4"><strong>Site:</strong> <span t-field="o.site_condition"/>, <t t-out="'%.1f' % o.work_hours"/> working hours</div>
+                    <div class="col-4"><strong>Site engineer:</strong> <span t-field="o.engineer_id"/></div>
+                </div>
+                <div class="row mb-3 text-center" style="background:#f1f4f8; padding:8px 0;">
+                    <div class="col-3"><div class="fs-4 fw-bold" t-out="o.manpower_count"/>workers</div>
+                    <div class="col-3"><div class="fs-4 fw-bold" t-out="'%.0f' % o.labour_hours"/>labour hours</div>
+                    <div class="col-3"><div class="fs-4 fw-bold" t-out="'%.0f' % o.equipment_hours"/>equipment hours</div>
+                    <div class="col-3"><div class="fs-4 fw-bold" t-out="'%.1f' % o.hours_lost"/>hours lost</div>
+                </div>
+
+                <t t-if="o.manpower_ids">
+                    <h5>Manpower</h5>
+                    <table class="table table-sm o_main_table">
+                        <thead><tr><th>Trade / person</th><th>Company</th><th class="text-end">Workers</th><th class="text-end">Hours</th><th>BOQ item</th><th>Activity</th></tr></thead>
+                        <tbody>
+                            <tr t-foreach="o.manpower_ids" t-as="l">
+                                <td t-out="l.employee_id.name or l.product_id.name"/>
+                                <td t-out="l.subcontractor_id.name or o.company_id.name"/>
+                                <td class="text-end" t-out="l.headcount"/>
+                                <td class="text-end" t-out="'%.1f' % l.total_hours"/>
+                                <td t-out="l.contract_line_id.item_no or ''"/>
+                                <td t-out="l.note or ''"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+                <t t-if="o.equipment_ids">
+                    <h5>Equipment</h5>
+                    <table class="table table-sm o_main_table">
+                        <thead><tr><th>Equipment</th><th class="text-end">Units</th><th class="text-end">Working h</th><th class="text-end">Idle h</th><th>BOQ item</th><th>Activity</th></tr></thead>
+                        <tbody>
+                            <tr t-foreach="o.equipment_ids" t-as="l">
+                                <td t-out="l.product_id.name"/>
+                                <td class="text-end" t-out="l.quantity"/>
+                                <td class="text-end" t-out="'%.1f' % l.total_hours"/>
+                                <td class="text-end" t-out="'%.1f' % l.hours_idle"/>
+                                <td t-out="l.contract_line_id.item_no or ''"/>
+                                <td t-out="l.note or ''"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+                <t t-if="o.work_ids">
+                    <h5>Work done</h5>
+                    <table class="table table-sm o_main_table">
+                        <thead><tr><th>BOQ item</th><th>Work</th><th>Location</th><th class="text-end">Today</th><th class="text-end">To date</th></tr></thead>
+                        <tbody>
+                            <tr t-foreach="o.work_ids" t-as="l">
+                                <td t-out="l.contract_line_id.item_no or ''"/>
+                                <td t-out="l.description"/>
+                                <td t-out="l.location or ''"/>
+                                <td class="text-end"><t t-out="'%g' % l.quantity"/> <t t-out="l.uom_id.name or ''"/></td>
+                                <td class="text-end"><t t-out="'%g' % l.qty_to_date"/> (<t t-out="'%.0f' % l.percent_to_date"/>%)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+                <t t-if="o.delay_ids">
+                    <h5>Delays &amp; issues</h5>
+                    <table class="table table-sm o_main_table">
+                        <thead><tr><th>Cause</th><th>Responsible</th><th class="text-end">Hours lost</th><th>Description</th></tr></thead>
+                        <tbody>
+                            <tr t-foreach="o.delay_ids" t-as="l">
+                                <td><span t-field="l.cause"/></td>
+                                <td><span t-field="l.responsible"/></td>
+                                <td class="text-end" t-out="'%.1f' % l.hours_lost"/>
+                                <td t-out="l.description"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+                <div class="row">
+                    <div class="col-6">
+                        <h5>Safety</h5>
+                        <p>Toolbox talk: <t t-out="'Yes' if o.toolbox_talk else 'No'"/> · Incidents / near misses: <t t-out="o.incidents"/></p>
+                        <p t-if="o.hse_notes" t-out="o.hse_notes"/>
+                    </div>
+                    <div class="col-6">
+                        <p t-if="o.visitors"><strong>Visitors &amp; inspections:</strong><br/><t t-out="o.visitors"/></p>
+                        <p t-if="o.instructions"><strong>Instructions received:</strong><br/><t t-out="o.instructions"/></p>
+                        <p t-if="o.materials_received"><strong>Materials delivered:</strong><br/><t t-out="o.materials_received"/></p>
+                    </div>
+                </div>
+                <div t-if="o.notes" t-field="o.notes"/>
+                <t t-if="o.photo_ids">
+                    <h5 class="mt-3" style="page-break-before: auto;">Photos</h5>
+                    <div class="row">
+                        <div class="col-6 mb-3" t-foreach="o.photo_ids" t-as="p" style="page-break-inside: avoid;">
+                            <img t-att-src="image_data_uri(p.image)" style="width:100%; max-height:260px; object-fit:cover; border-radius:4px;"/>
+                            <div class="small text-muted" t-out="p.caption or ''"/>
+                        </div>
+                    </div>
+                </t>
+                <div class="row mt-4" style="page-break-inside: avoid;">
+                    <div class="col-6">
+                        <p class="mb-5"><strong>Prepared by (site engineer)</strong></p>
+                        <p><span t-field="o.engineer_id"/></p>
+                    </div>
+                    <div class="col-6">
+                        <p class="mb-5"><strong>Approved by</strong></p>
+                        <p t-if="o.approved_by_id"><span t-field="o.approved_by_id"/>, <span t-field="o.approved_date"/></p>
+                        <p t-else="" class="text-muted">Not yet approved</p>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_dvz_site_diary">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="dvz_contract_site_diary.report_dvz_site_diary_document"/>
+            </t>
+        </t>
+    </template>
+</odoo>

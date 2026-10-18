@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_contract_view_form_wip" model="ir.ui.view">
+        <field name="name">dvz.contract.form.wip</field>
+        <field name="model">dvz.contract</field>
+        <field name="inherit_id" ref="dvz_contract.dvz_contract_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='terms']//field[@name='tax_ids']" position="after">
+                <field name="wip_method" groups="dvz_contract.group_dvz_contract_manager"/>
+                <field name="wip_percent_manual" invisible="wip_method != 'manual'" groups="dvz_contract.group_dvz_contract_manager"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_wip_lines" type="object" class="oe_stat_button" icon="fa-line-chart"
+                        invisible="not wip_last_line_id" groups="dvz_contract.group_dvz_contract_manager">
+                    <div class="o_stat_info">
+                        <span class="o_stat_value"><field name="wip_adjustment" widget="monetary" nolabel="1"/></span>
+                        <span class="o_stat_text">Over / Under Billing</span>
+                    </div>
+                </button>
+            </xpath>
+        </field>
+    </record>
+</odoo>

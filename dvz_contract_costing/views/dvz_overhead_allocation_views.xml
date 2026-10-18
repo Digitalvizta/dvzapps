@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_overhead_allocation_view_form" model="ir.ui.view">
+        <field name="name">dvz.overhead.allocation.form</field>
+        <field name="model">dvz.overhead.allocation</field>
+        <field name="arch" type="xml">
+            <form string="Overhead Allocation">
+                <header>
+                    <button name="action_compute" string="Calculate shares" type="object" invisible="state != 'draft'"/>
+                    <button name="action_post" string="Post to contracts" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state != 'posted'"
+                            confirm="This removes the allocated overheads from every contract. Continue?"/>
+                    <button name="action_draft" string="Reset to Draft" type="object" invisible="state != 'cancel'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,posted"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                        <field name="description" readonly="state != 'draft'"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="amount" readonly="state != 'draft'"/>
+                            <field name="basis" readonly="state != 'draft'"/>
+                            <field name="date" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <label for="date_from" string="Period"/>
+                            <div class="o_row">
+                                <field name="date_from" readonly="state != 'draft'"/> → <field name="date_to" readonly="state != 'draft'"/>
+                            </div>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state != 'draft'"/>
+                        </group>
+                    </group>
+                    <field name="contract_ids" widget="many2many_tags" readonly="state != 'draft'"
+                           placeholder="Contracts that share the overheads"/>
+                    <p class="text-muted mt-2" invisible="state != 'draft'">
+                        Head-office costs (management salaries, office rent, IT, insurance...) are shared across the chosen
+                        contracts as <b>Head-Office Overheads</b>. Posting adds a cost line on each contract's analytic account
+                        (management accounting only, no journal entry). Cancel to remove it again.
+                    </p>
+                    <field name="line_ids" readonly="1">
+                        <list>
+                            <field name="currency_id" column_invisible="True"/>
+                            <field name="contract_id"/>
+                            <field name="basis_value"/>
+                            <field name="share_percent"/>
+                            <field name="amount" sum="Total"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="dvz_overhead_allocation_view_list" model="ir.ui.view">
+        <field name="name">dvz.overhead.allocation.list</field>
+        <field name="model">dvz.overhead.allocation</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state == 'cancel'">
+                <field name="name"/>
+                <field name="description"/>
+                <field name="date"/>
+                <field name="date_from" optional="hide"/>
+                <field name="date_to" optional="hide"/>
+                <field name="basis"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="amount" sum="Total"/>
+                <field name="state" widget="badge" decoration-success="state == 'posted'" decoration-info="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_dvz_overhead_allocation" model="ir.actions.act_window">
+        <field name="name">Overhead Allocations</field>
+        <field name="res_model">dvz.overhead.allocation</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Share head-office costs across your contracts</p>
+            <p>Enter the head-office cost of a month or quarter, choose how to share it (direct cost, labour hours,
+               contract value or equally) and post it. Each contract's job costing then shows its real full cost.</p>
+        </field>
+    </record>
+</odoo>

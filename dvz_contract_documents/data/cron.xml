@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="ir_cron_dvz_rfi_overdue" model="ir.cron">
+        <field name="name">Contracting: remind overdue RFIs</field>
+        <field name="model_id" ref="model_dvz_rfi"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_remind_overdue()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+    </record>
+    <record id="ir_cron_dvz_submittal_overdue" model="ir.cron">
+        <field name="name">Contracting: remind overdue submittals</field>
+        <field name="model_id" ref="model_dvz_submittal"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_remind_overdue()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+    </record>
+</odoo>

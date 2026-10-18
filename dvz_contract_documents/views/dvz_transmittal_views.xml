@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_transmittal_view_form" model="ir.ui.view">
+        <field name="name">dvz.transmittal.form</field>
+        <field name="model">dvz.transmittal</field>
+        <field name="arch" type="xml">
+            <form string="Transmittal">
+                <header>
+                    <button name="action_send" string="Send" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_mark_acknowledged" string="Mark as Received" type="object" invisible="state != 'sent'"/>
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state in ('acknowledged', 'cancel')"/>
+                    <button name="action_draft" string="Reset to Draft" type="object" invisible="state != 'cancel'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,sent,acknowledged"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                        <field name="subject" placeholder="e.g. Structural shop drawings, basement level" readonly="state != 'draft'"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="contract_id" readonly="state != 'draft'" options="{'no_create': True}"/>
+                            <field name="to_partner_id" readonly="state != 'draft'"/>
+                            <field name="purpose" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="user_id"/>
+                            <field name="ack_partner_id" invisible="not ack_partner_id"/>
+                            <field name="ack_date" invisible="not ack_date"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <field name="line_ids" readonly="state != 'draft'">
+                        <list editable="bottom">
+                            <field name="contract_id" column_invisible="True"/>
+                            <field name="sequence" widget="handle"/>
+                            <field name="submittal_id" optional="show" options="{'no_create': True}"/>
+                            <field name="doc_ref"/>
+                            <field name="description"/>
+                            <field name="revision"/>
+                            <field name="doc_format"/>
+                            <field name="copies"/>
+                        </list>
+                    </field>
+                    <field name="message" placeholder="Covering message" readonly="state != 'draft'"/>
+                    <label for="attachment_ids" class="fw-bold mt-3"/>
+                    <field name="attachment_ids" widget="many2many_binary" readonly="state != 'draft'"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="dvz_transmittal_view_list" model="ir.ui.view">
+        <field name="name">dvz.transmittal.list</field>
+        <field name="model">dvz.transmittal</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state == 'cancel'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="subject"/>
+                <field name="contract_id"/>
+                <field name="to_partner_id"/>
+                <field name="purpose" optional="show"/>
+                <field name="state" widget="badge" decoration-warning="state == 'sent'" decoration-success="state == 'acknowledged'"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_dvz_transmittal" model="ir.actions.act_window">
+        <field name="name">Transmittals</field>
+        <field name="res_model">dvz.transmittal</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

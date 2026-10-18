@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="seq_dvz_site_diary" model="ir.sequence">
+        <field name="name">Site Diary</field>
+        <field name="code">dvz.site.diary</field>
+        <field name="prefix">SD/%(year)s/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+</odoo>

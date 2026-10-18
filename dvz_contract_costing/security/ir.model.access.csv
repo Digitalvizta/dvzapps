@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_dvz_overhead_allocation_user,dvz.overhead.allocation user,model_dvz_overhead_allocation,dvz_contract.group_dvz_contract_user,1,0,0,0
+access_dvz_overhead_allocation_manager,dvz.overhead.allocation manager,model_dvz_overhead_allocation,dvz_contract.group_dvz_contract_manager,1,1,1,1
+access_dvz_overhead_allocation_line_user,dvz.overhead.allocation.line user,model_dvz_overhead_allocation_line,dvz_contract.group_dvz_contract_user,1,0,0,0
+access_dvz_overhead_allocation_line_manager,dvz.overhead.allocation.line manager,model_dvz_overhead_allocation_line,dvz_contract.group_dvz_contract_manager,1,1,1,1
+access_dvz_job_cost_report_user,dvz.job.cost.report user,model_dvz_job_cost_report,dvz_contract.group_dvz_contract_user,1,0,0,0
+access_dvz_overhead_allocation_account,dvz.overhead.allocation accountant,model_dvz_overhead_allocation,account.group_account_manager,1,1,1,1
+access_dvz_overhead_allocation_line_account,dvz.overhead.allocation.line accountant,model_dvz_overhead_allocation_line,account.group_account_manager,1,1,1,1

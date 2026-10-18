@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_analytic_line_tree_costing" model="ir.ui.view">
+        <field name="name">account.analytic.line.list.dvz.costing</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="analytic.view_account_analytic_line_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='amount']" position="before">
+                <field name="dvz_contract_id" optional="show" readonly="1"/>
+                <field name="dvz_contract_line_id" optional="show" options="{'no_create': True}"/>
+                <field name="dvz_cost_type" optional="show"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_account_analytic_line_form_costing" model="ir.ui.view">
+        <field name="name">account.analytic.line.form.dvz.costing</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="analytic.view_account_analytic_line_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <group string="Job Costing" invisible="not dvz_contract_id">
+                    <group>
+                        <field name="dvz_contract_id" readonly="1"/>
+                        <field name="dvz_contract_line_id" options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <field name="dvz_cost_type"/>
+                        <field name="dvz_allocation_id" invisible="not dvz_allocation_id"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+    <record id="view_account_analytic_line_filter_costing" model="ir.ui.view">
+        <field name="name">account.analytic.line.search.dvz.costing</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="analytic.view_account_analytic_line_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='date']" position="after">
+                <field name="dvz_contract_id"/>
+                <field name="dvz_contract_line_id"/>
+            </xpath>
+            <xpath expr="//group[@name='groupby']" position="inside">
+                <filter string="Cost Type" name="group_dvz_cost_type" context="{'group_by': 'dvz_cost_type'}"/>
+                <filter string="Contract" name="group_dvz_contract" context="{'group_by': 'dvz_contract_id'}"/>
+                <filter string="BOQ Item" name="group_dvz_boq" context="{'group_by': 'dvz_contract_line_id'}"/>
+            </xpath>
+        </field>
+    </record>
+    <record id="action_dvz_analytic_reclassify" model="ir.actions.server">
+        <field name="name">Classify job costs again</field>
+        <field name="model_id" ref="analytic.model_account_analytic_line"/>
+        <field name="binding_model_id" ref="analytic.model_account_analytic_line"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_dvz_reclassify()</field>
+        <field name="group_ids" eval="[(4, ref('dvz_contract.group_dvz_contract_manager'))]"/>
+    </record>
+    <!-- BOQ item on timesheets -->
+    <record id="hr_timesheet_line_tree_costing" model="ir.ui.view">
+        <field name="name">account.analytic.line.timesheet.list.dvz.costing</field>
+        <field name="model">account.analytic.line</field>
+        <field name="inherit_id" ref="hr_timesheet.hr_timesheet_line_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='task_id']" position="after">
+                <field name="dvz_contract_line_id" optional="hide" options="{'no_create': True}"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

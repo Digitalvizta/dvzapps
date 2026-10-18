@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="menu_dvz_costing" name="Costing" parent="dvz_contract.menu_dvz_contracting_root" sequence="30"
+              groups="dvz_contract.group_dvz_show_cost"/>
+    <menuitem id="menu_dvz_job_cost_report" name="Job Cost Analysis" parent="menu_dvz_costing"
+              action="action_dvz_job_cost_report" sequence="10"/>
+    <menuitem id="menu_dvz_overhead_allocation" name="Overhead Allocations" parent="menu_dvz_costing"
+              action="action_dvz_overhead_allocation" sequence="20" groups="dvz_contract.group_dvz_contract_manager"/>
+    <menuitem id="menu_dvz_job_cost_report_reporting" name="Job Cost Analysis" parent="dvz_contract.menu_dvz_reporting"
+              action="action_dvz_job_cost_report" sequence="20" groups="dvz_contract.group_dvz_show_cost"/>
+</odoo>

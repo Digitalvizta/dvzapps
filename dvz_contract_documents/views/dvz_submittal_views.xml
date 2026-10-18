@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_submittal_view_form" model="ir.ui.view">
+        <field name="name">dvz.submittal.form</field>
+        <field name="model">dvz.submittal</field>
+        <field name="arch" type="xml">
+            <form string="Submittal">
+                <header>
+                    <button name="action_submit" string="Submit for Review" type="object" class="oe_highlight" invisible="state != 'draft'"/>
+                    <button name="action_record_review" string="Record Review" type="object" invisible="state != 'submitted'"
+                            help="Enter the review code and comments you received outside the portal, then press this."/>
+                    <button name="action_resubmit" string="New Revision" type="object" class="oe_highlight"
+                            invisible="state != 'reviewed' or review_code == 'A'"/>
+                    <button name="action_close" string="Close" type="object" invisible="state != 'reviewed' or review_code not in ('A', 'B')"/>
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state in ('closed', 'superseded', 'cancel')"/>
+                    <button name="action_draft" string="Reset to Draft" type="object" invisible="state != 'cancel'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,reviewed,closed"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Overdue" bg_color="text-bg-danger" invisible="not is_overdue"/>
+                    <widget name="web_ribbon" title="Superseded" bg_color="text-bg-secondary" invisible="state != 'superseded'"/>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/> <span class="text-muted fs-4"><field name="revision_label"/></span></h1>
+                        <field name="title" placeholder="e.g. Waterproofing membrane for basement" readonly="state != 'draft'"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="contract_id" readonly="state != 'draft'" options="{'no_create': True}"/>
+                            <field name="submittal_type" readonly="state != 'draft'"/>
+                            <field name="spec_section" readonly="state != 'draft'"/>
+                            <field name="contract_line_id" readonly="state != 'draft'" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="user_id"/>
+                            <field name="date_submitted" invisible="not date_submitted"/>
+                            <field name="date_due"/>
+                            <field name="parent_id" invisible="not parent_id"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Submittal" name="submittal">
+                            <field name="description" readonly="state != 'draft'" placeholder="Manufacturer, product, compliance with the specification..."/>
+                            <label for="attachment_ids" class="fw-bold mt-3"/>
+                            <field name="attachment_ids" widget="many2many_binary" readonly="state != 'draft'"/>
+                        </page>
+                        <page string="Review" name="review">
+                            <group>
+                                <group>
+                                    <field name="review_code" readonly="state != 'submitted'" widget="radio"/>
+                                </group>
+                                <group invisible="not reviewed_by_id">
+                                    <field name="reviewed_by_id"/>
+                                    <field name="review_date"/>
+                                </group>
+                            </group>
+                            <field name="review_comment" readonly="state != 'submitted'" placeholder="Reviewer comments"/>
+                            <label for="review_attachment_ids" class="fw-bold mt-3"/>
+                            <field name="review_attachment_ids" widget="many2many_binary" readonly="state != 'submitted'"/>
+                        </page>
+                        <page string="Revisions" name="revisions" invisible="not parent_id and not child_ids">
+                            <field name="child_ids" readonly="1">
+                                <list><field name="revision_label"/><field name="state"/><field name="review_code"/></list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+    <record id="dvz_submittal_view_list" model="ir.ui.view">
+        <field name="name">dvz.submittal.list</field>
+        <field name="model">dvz.submittal</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="is_overdue" decoration-muted="state in ('closed', 'superseded', 'cancel')">
+                <field name="name"/>
+                <field name="revision_label" string="Rev."/>
+                <field name="title"/>
+                <field name="contract_id"/>
+                <field name="submittal_type"/>
+                <field name="date_submitted" optional="show"/>
+                <field name="date_due"/>
+                <field name="is_overdue" column_invisible="True"/>
+                <field name="review_code" widget="badge" decoration-success="review_code in ('A', 'B')" decoration-danger="review_code in ('C', 'D')"/>
+                <field name="state" widget="badge" decoration-warning="state == 'submitted'" decoration-success="state == 'closed'"/>
+            </list>
+        </field>
+    </record>
+    <record id="dvz_submittal_view_search" model="ir.ui.view">
+        <field name="name">dvz.submittal.search</field>
+        <field name="model">dvz.submittal</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="title"/>
+                <field name="contract_id"/>
+                <filter string="Current revisions" name="current" domain="[('state', 'not in', ('superseded', 'cancel'))]"/>
+                <filter string="Under review" name="open" domain="[('state', '=', 'submitted')]"/>
+                <filter string="Overdue" name="overdue" domain="[('is_overdue', '=', True)]"/>
+                <filter string="Needs resubmission (C/D)" name="resubmit" domain="[('state', '=', 'reviewed'), ('review_code', 'in', ('C', 'D'))]"/>
+                <group name="groupby">
+                    <filter string="Contract" name="group_contract" context="{'group_by': 'contract_id'}"/>
+                    <filter string="Type" name="group_type" context="{'group_by': 'submittal_type'}"/>
+                    <filter string="Review code" name="group_code" context="{'group_by': 'review_code'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <record id="action_dvz_submittal" model="ir.actions.act_window">
+        <field name="name">Submittals</field>
+        <field name="res_model">dvz.submittal</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_current': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Submit your first material or shop drawing</p>
+            <p>The consultant reviews in the portal with code A, B, C or D. Codes C and D create the next revision (R1, R2...)
+               with the full history kept.</p>
+        </field>
+    </record>
+</odoo>

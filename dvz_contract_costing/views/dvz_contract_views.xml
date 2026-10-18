@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dvz_contract_view_form_costing" model="ir.ui.view">
+        <field name="name">dvz.contract.form.costing</field>
+        <field name="model">dvz.contract</field>
+        <field name="inherit_id" ref="dvz_contract.dvz_contract_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_job_cost_report" type="object" class="oe_stat_button" icon="fa-pie-chart"
+                        invisible="state == 'draft'" groups="dvz_contract.group_dvz_show_cost">
+                    <div class="o_stat_info">
+                        <span class="o_stat_value"><field name="jc_margin_percent" widget="float" digits="[16,1]" nolabel="1"/>%</span>
+                        <span class="o_stat_text">Forecast Margin</span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//page[@name='cost_control']" position="after">
+                <page string="Job Costing" name="job_costing" invisible="state == 'draft' and not line_ids"
+                      groups="dvz_contract.group_dvz_show_cost">
+                    <div class="row g-3 mb-3">
+                        <div class="col-lg-3 col-6">
+                            <div class="border rounded p-3 h-100">
+                                <div class="text-muted small">Contract Value</div>
+                                <div class="fs-4 fw-bold"><field name="amount_untaxed" widget="monetary" readonly="1"/></div>
+                                <div class="small">Work done: <field name="jc_progress" widget="float" digits="[16,1]" class="d-inline"/>%</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="border rounded p-3 h-100">
+                                <div class="text-muted small">Forecast Final Cost</div>
+                                <div class="fs-4 fw-bold"><field name="jc_eac" widget="monetary"/></div>
+                                <div class="small">Spent so far: <field name="jc_actual" widget="monetary" class="d-inline"/></div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="border rounded p-3 h-100">
+                                <div class="text-muted small">Forecast Margin</div>
+                                <div class="fs-4 fw-bold"><field name="jc_margin" widget="monetary"/></div>
+                                <div class="small"><field name="jc_margin_percent" widget="float" digits="[16,1]" class="d-inline"/>% (planned <field name="planned_margin_percent" widget="float" digits="[16,1]" class="d-inline"/>%)</div>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-6">
+                            <div class="border rounded p-3 h-100">
+                                <div class="text-muted small">Variance to Budget</div>
+                                <div class="fs-4 fw-bold"><field name="jc_variance" widget="monetary"/></div>
+                                <div class="small text-danger" invisible="not jc_alert_count"><field name="jc_alert_count" class="d-inline"/> BOQ items over budget</div>
+                                <div class="small text-success" invisible="jc_alert_count">No BOQ item over budget</div>
+                            </div>
+                        </div>
+                    </div>
+                    <field name="jc_summary_html" nolabel="1" readonly="1"/>
+                    <div class="d-flex flex-wrap gap-2 align-items-center my-3">
+                        <button name="action_view_job_cost_report" type="object" string="Analyse costs" class="btn-secondary" icon="fa-table"/>
+                        <button name="action_view_jc_costs" type="object" string="Cost lines" class="btn-secondary" icon="fa-list"/>
+                        <button name="action_jc_reclassify" type="object" string="Update" class="btn-link" icon="fa-refresh"
+                                help="Check every cost posted on this contract again (cost type and BOQ item)."/>
+                        <span class="ms-auto"/>
+                        <label for="costing_method" string="Cost to complete:" class="mb-0"/>
+                        <field name="costing_method" class="w-auto"/>
+                        <label for="ho_overhead_percent" string="Head-office overhead %" class="mb-0 ms-3"/>
+                        <field name="ho_overhead_percent" class="o_field_short" style="max-width:80px"/>
+                    </div>
+                    <div class="alert alert-warning py-2" role="status" invisible="not jc_unlinked_actual">
+                        <field name="jc_unlinked_actual" widget="monetary" class="d-inline fw-bold"/> of cost is not linked to a BOQ item.
+                        It counts in the contract totals; link the cost lines to a BOQ item to see it per item.
+                    </div>
+                    <h5 class="mt-4">Cost to complete per BOQ item</h5>
+                    <field name="jc_line_ids" nolabel="1">
+                        <list editable="bottom" create="0" delete="0" decoration-danger="jc_status == 'over'" decoration-warning="jc_status == 'warn'">
+                            <field name="currency_id" column_invisible="True"/>
+                            <field name="item_no" readonly="1" optional="show"/>
+                            <field name="name" readonly="1" string="Item"/>
+                            <field name="price_subtotal" readonly="1" string="Value" optional="hide" sum="Total"/>
+                            <field name="cost_subtotal" readonly="1" string="Budget" sum="Total"/>
+                            <field name="jc_progress" string="Done %" widget="progressbar" optional="show"/>
+                            <field name="jc_actual" sum="Total"/>
+                            <field name="jc_open_commit" sum="Total" optional="show"/>
+                            <field name="etc_manual" string="To complete (entered)" column_invisible="parent.costing_method != 'manual'"/>
+                            <field name="jc_etc" sum="Total"/>
+                            <field name="jc_eac" sum="Total"/>
+                            <field name="jc_variance" sum="Total" decoration-danger="jc_variance &lt; 0"/>
+                            <field name="jc_margin_percent" string="Margin %" optional="show"/>
+                            <field name="budget_hours" optional="hide"/>
+                            <field name="jc_actual_hours" optional="hide"/>
+                            <field name="jc_status" widget="badge" decoration-success="jc_status == 'ok'"
+                                   decoration-warning="jc_status == 'warn'" decoration-danger="jc_status == 'over'" optional="show"/>
+                            <button name="action_view_jc_costs" type="object" icon="fa-search" title="Cost lines"/>
+                        </list>
+                    </field>
+                    <h5 class="mt-4">Budget split per BOQ item <small class="text-muted fw-normal">(cost per unit; the estimated unit cost becomes their total)</small></h5>
+                    <field name="jc_line_ids" nolabel="1" readonly="boq_locked and state not in ('draft', 'progress')">
+                        <list editable="bottom" create="0" delete="0">
+                            <field name="currency_id" column_invisible="True"/>
+                            <field name="item_no" readonly="1" optional="show"/>
+                            <field name="name" readonly="1" string="Item"/>
+                            <field name="quantity" readonly="1"/>
+                            <field name="uom_id" readonly="1" optional="show"/>
+                            <field name="cost_material_unit"/>
+                            <field name="cost_labour_unit"/>
+                            <field name="labour_hours_unit" optional="hide"/>
+                            <field name="cost_equipment_unit"/>
+                            <field name="cost_subcontract_unit"/>
+                            <field name="cost_overhead_unit"/>
+                            <field name="cost_unit" readonly="1" string="Unit Cost"/>
+                            <field name="cost_subtotal" sum="Total" string="Budget"/>
+                            <field name="budget_other" optional="hide" sum="Total"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="dvz_contract_view_list_costing" model="ir.ui.view">
+        <field name="name">dvz.contract.list.costing</field>
+        <field name="model">dvz.contract</field>
+        <field name="inherit_id" ref="dvz_contract.dvz_contract_view_list"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="inside">
+                <field name="jc_eac" optional="hide" groups="dvz_contract.group_dvz_show_cost"/>
+                <field name="jc_margin_percent" string="Forecast Margin %" optional="hide" groups="dvz_contract.group_dvz_show_cost"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
